@@ -66,7 +66,7 @@
 // import { connectMongoDB } from "@/app/DBconfig/mongoDB";
 // import Product from "@/app/models/product";
 // import Category from "@/app/models/Category";
-// import cloudinary from "@/app/lib/cloudinary";
+// import cloudinary from "@/app/li/cloudinary";
 
 // export async function POST(req) {
 //   try {

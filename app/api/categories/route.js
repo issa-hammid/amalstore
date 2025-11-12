@@ -227,7 +227,7 @@
 import { NextResponse } from "next/server";
 import { connectMongoDB } from "@/app/DBconfig/mongoDB";
 import Category from "@/app/models/Category";
-import { uploadToCloudinary, deleteFromCloudinary } from "@/app/lib/cloudinary";
+import { uploadToCloudinary, deleteFromCloudinary } from "../../lib/cloudinary";
 
 export async function POST(req) {
   try {

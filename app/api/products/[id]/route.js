@@ -1,7 +1,7 @@
 
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
-import cloudinary from "../../../lib/cloudinary"; // استيراد من الملف الموجود
+import cloudinary from "../../../lib/cloudinary"; 
 
 // الموديل مباشرة
 const ProductSchema = new mongoose.Schema({
