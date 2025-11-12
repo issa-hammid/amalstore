@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { connectMongoDB } from "@/app/DBconfig/mongoDB";
 import Product from "@/app/models/product";
-import Category from "@/app/models/Category";
 
 export async function GET() {
   try {

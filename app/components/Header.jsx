@@ -334,13 +334,15 @@ import { useCart } from "../context/CartContext";
 import CartSidebar from "./CartSidebar";
 import { ShoppingCart, Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { ShoppingBag } from "lucide-react";
+import { usePathname } from 'next/navigation';
+
 function Header() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
-  
+  const pathname = usePathname(); 
+
   const { totalItems, setIsCartOpen } = useCart();
   const router = useRouter();
 
@@ -411,7 +413,7 @@ function Header() {
             <div className="flex items-center space-x-6 space-x-reverse">
               <button
                 onClick={() => setIsCartOpen(true)}
-                className="relative w-10 h-10 rounded-full flex items-center justify-center hover:bg-white hover:bg-opacity-20 transition-all"
+                className="relative w-10 h-10 rounded-full flex items-center justify-center hover:bg-amber-500 hover:bg-opacity-20 transition-all"
               >
                 <ShoppingCart className="w-7 h-7 text-white" />
                 {totalItems > 0 && (
@@ -423,34 +425,61 @@ function Header() {
             </div>
           </div>
 
-          {/* شريط التصنيفات */}
-          <nav className="mt-4">
-            <div className="flex items-center space-x-8 space-x-reverse overflow-x-auto pb-2">
-              <Link
-                href="/"
-                className="flex-shrink-0 text-white hover:text-yellow-500 transition-colors font-medium px-3 py-1 rounded-lg hover:bg-white hover:bg-opacity-10"
-              >
-                الرئيسية
-              </Link>
+    <nav className="mt-4">
+      <div className="flex items-center space-x-8 space-x-reverse overflow-x-auto pb-3">
+        {/* رابط الرئيسية */}
+        <Link
+          href="/"
+          className={`flex-shrink-0 transition-all font-medium px-4 py-2 rounded-lg whitespace-nowrap ${
+            pathname === "/" 
+              ? "text-amber-600 bg-amber-100 border border-amber-500 shadow-sm font-semibold" 
+              : "text-white hover:text-amber-500 hover:bg-white hover:bg-opacity-10"
+          }`}
+        >
+          الرئيسية
+        </Link>
 
-              {loading
-                ? Array.from({ length: skeletonCount }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="flex-shrink-0 bg-gray-100 rounded-md h-6 w-20 animate-pulse"
-                    />
-                  ))
-                : categories.map((category) => (
-                    <Link
-                      key={category._id}
-                      href={`/categories/${category._id}`}
-                      className="flex-shrink-0 text-white hover:text-yellow-200 transition-colors font-medium px-3 py-1 rounded-lg hover:bg-white hover:bg-opacity-10 whitespace-nowrap"
-                    >
-                      {category.name}
-                    </Link>
-                  ))}
-            </div>
-          </nav>
+        {loading
+          ? Array.from({ length: skeletonCount }).map((_, i) => (
+              <div
+                key={i}
+                className="flex-shrink-0 bg-gray-300 rounded-lg h-10 w-24 animate-pulse"
+              />
+            ))
+          : categories.map((category) => (
+              <Link
+                key={category._id}
+                href={`/categories/${category._id}`}
+                className={`flex-shrink-0 transition-all font-medium px-4 py-2 rounded-md whitespace-nowrap ${
+                  pathname === `/categories/${category._id}`
+                    ? "text-amber-600 bg-amber-100 border border-amber-400 shadow-sm font-semibold"
+                    : "text-white hover:text-amber-400 hover:bg-white hover:bg-opacity-10"
+                }`}
+              >
+                {category.name}
+              </Link>
+            ))}
+      </div>
+      
+      {/* ستايل السكرول المخصص */}
+      <style jsx>{`
+        div::-webkit-scrollbar {
+          height: 6px;
+        }
+        div::-webkit-scrollbar-track {
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 10px;
+        }
+        div::-webkit-scrollbar-thumb {
+          background: linear-gradient(135deg, #fbbf24, #d97706);
+          border-radius: 10px;
+          border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        div::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(135deg, #f59e0b, #b45309);
+        }
+      `}</style>
+    </nav>
         </div>
       </header>
 

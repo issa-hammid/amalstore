@@ -318,7 +318,7 @@ export default function CartSidebar() {
       {/* Overlay - شفاف بدل أسود */}
       {isCartOpen && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-50 transition-opacity"
+          className="fixed inset-0  backdrop-blur-sm z-50 transition-opacity"
           onClick={() => setIsCartOpen(false)}
         />
       )}
