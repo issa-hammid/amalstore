@@ -1122,12 +1122,12 @@ export default function ProductDetailPage() {
                   </h1>
                 </div>
 
-                <div className="flex items-center gap-2 text-sm">
+                {/* <div className="flex items-center gap-2 text-sm">
                   <span className="text-gray-600">النوع المحدد:</span>
                   <span className="font-bold text-amber-600">
                     {getCurrentColorName()}
                   </span>
-                </div>
+                </div> */}
 
                 <div className="flex items-center gap-4">
                   <span className="text-3xl font-bold text-green-600">
@@ -1183,7 +1183,7 @@ export default function ProductDetailPage() {
                           alt="أساسي"
                           className="w-8 h-8 rounded-full object-cover"
                         />
-                        <span className="text-sm">أساسي</span>
+                        {/* <span className="text-sm">أساسي</span> */}
                         <span className="text-xs text-gray-500">({product.stock})</span>
                       </button>
 
