@@ -9,7 +9,7 @@ export default function AdminLogin() {
   const router = useRouter();
 
   // كلمة المرور (تغيرها أنت)
-  const ADMIN_PASSWORD = "hi-amal-store-2026";
+  const ADMIN_PASSWORD = "amal5991";
 
   const handleLogin = (e) => {
     e.preventDefault();
