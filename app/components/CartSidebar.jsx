@@ -451,13 +451,6 @@ export default function CartSidebar() {
 
             {/* Buttons */}
             <div className="space-y-2">
-              <button
-                onClick={() => setIsCartOpen(false)}
-                className="w-full py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
-              >
-                استمر في التسوق
-              </button>
-              
               <Link 
                 href="/cart"
                 onClick={() => setIsCartOpen(false)}
@@ -465,6 +458,14 @@ export default function CartSidebar() {
               >
                 عرض منتجاتك واكمل الطلب
               </Link>
+              <button
+                onClick={() => setIsCartOpen(false)}
+                className="w-full py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+              >
+                استمر في التسوق
+              </button>
+              
+              
             </div>
           </div>
         )}
