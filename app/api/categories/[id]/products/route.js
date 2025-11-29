@@ -10,7 +10,7 @@ export async function GET(request, { params }) {
     
     const products = await Product.find({ category: id })
       .populate('category', 'name')
-      .limit(30)
+      .limit(150)
       .lean();
 
     return NextResponse.json({
