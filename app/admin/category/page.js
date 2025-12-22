@@ -857,7 +857,7 @@ export default function AdminCategoriesPage() {
                   value={formData.name}
                   onChange={handleInputChange}
                   className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-rose-400"
-                  required
+                  
                 />
               </div>
 

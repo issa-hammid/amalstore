@@ -146,67 +146,122 @@ export default function AddProductPage() {
   };
 
   // 🟢 عند الإرسال
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   setUploading(true);
+
+  //   try {
+  //     const fd = new FormData();
+
+  //     // القيم الأساسية
+  //     fd.append("name", formData.name);
+  //     fd.append("description", formData.description);
+  //     fd.append("price", formData.price);
+  //     fd.append("oldPrice", formData.oldPrice);
+  //     fd.append("discountPercent", formData.discountPercent || ""); // إرسال القيمة المحسوبة
+  //     fd.append("isFeatured", formData.isFeatured);
+  //     fd.append("stock", formData.stock);
+  //     fd.append("category", formData.category);
+  //     fd.append("image", formData.image);
+
+  //     // الألوان (كل لون له مجموعة قيم)
+  //     formData.colors.forEach((color, index) => {
+  //       fd.append(`colors[${index}][colorName]`, color.colorName);
+  //       fd.append(`colors[${index}][stock]`, color.stock);
+  //       if (color.image) {
+  //         fd.append(`colors[${index}][image]`, color.image);
+  //       }
+  //     });
+
+  //     const res = await fetch("/api/add-product", {
+  //       method: "POST",
+  //       body: fd,
+  //     });
+
+  //     const data = await res.json();
+  //     if (res.ok) {
+  //       notify.success(" تم إضافة المنتج بنجاح");
+  //       setFormData({
+  //         name: "",
+  //         description: "",
+  //         image: null,
+  //         price: "",
+  //         oldPrice: "",
+  //         discountPercent: "",
+  //         isFeatured: false,
+  //         stock: "",
+  //         category: "",
+  //         colors: [{ colorName: "", image: null, stock: "" }],
+  //       });
+  //       setImagePreviews({
+  //         main: null,
+  //         colors: [],
+  //       });
+  //     } else {
+  //       notify.error(" خطأ: " + data.error);
+  //     }
+  //   } catch (error) {
+  //     console.error(error);
+  //     alert("حدث خطأ أثناء الإرسال");
+  //   } finally {
+  //     setUploading(false);
+  //   }
+  // };
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setUploading(true);
+  e.preventDefault();
+  setUploading(true);
 
-    try {
-      const fd = new FormData();
+  try {
+    const fd = new FormData();
 
-      // القيم الأساسية
-      fd.append("name", formData.name);
-      fd.append("description", formData.description);
-      fd.append("price", formData.price);
-      fd.append("oldPrice", formData.oldPrice);
-      fd.append("discountPercent", formData.discountPercent || ""); // إرسال القيمة المحسوبة
-      fd.append("isFeatured", formData.isFeatured);
-      fd.append("stock", formData.stock);
-      fd.append("category", formData.category);
+    // 🟢 أرسل فقط القيم الموجودة
+    if (formData.name) fd.append("name", formData.name);
+    if (formData.description) fd.append("description", formData.description);
+    if (formData.price) fd.append("price", formData.price);
+    if (formData.oldPrice) fd.append("oldPrice", formData.oldPrice);
+    if (formData.discountPercent) fd.append("discountPercent", formData.discountPercent);
+    if (formData.stock) fd.append("stock", formData.stock);
+    if (formData.category) fd.append("category", formData.category);
+
+    fd.append("isFeatured", formData.isFeatured); // boolean عادي
+
+    if (formData.image) {
       fd.append("image", formData.image);
-
-      // الألوان (كل لون له مجموعة قيم)
-      formData.colors.forEach((color, index) => {
-        fd.append(`colors[${index}][colorName]`, color.colorName);
-        fd.append(`colors[${index}][stock]`, color.stock);
-        if (color.image) {
-          fd.append(`colors[${index}][image]`, color.image);
-        }
-      });
-
-      const res = await fetch("/api/add-product", {
-        method: "POST",
-        body: fd,
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        notify.success(" تم إضافة المنتج بنجاح");
-        setFormData({
-          name: "",
-          description: "",
-          image: null,
-          price: "",
-          oldPrice: "",
-          discountPercent: "",
-          isFeatured: false,
-          stock: "",
-          category: "",
-          colors: [{ colorName: "", image: null, stock: "" }],
-        });
-        setImagePreviews({
-          main: null,
-          colors: [],
-        });
-      } else {
-        notify.error(" خطأ: " + data.error);
-      }
-    } catch (error) {
-      console.error(error);
-      alert("حدث خطأ أثناء الإرسال");
-    } finally {
-      setUploading(false);
     }
-  };
+
+    // 🟢 الألوان (بس اللي فيهم قيمة)
+    formData.colors.forEach((color, index) => {
+      if (color.colorName) {
+        fd.append(`colors[${index}][colorName]`, color.colorName);
+      }
+      if (color.stock) {
+        fd.append(`colors[${index}][stock]`, color.stock);
+      }
+      if (color.image) {
+        fd.append(`colors[${index}][image]`, color.image);
+      }
+    });
+
+    const res = await fetch("/api/add-product", {
+      method: "POST",
+      body: fd,
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      notify.success("تم إضافة المنتج بنجاح");
+      // reset form...
+    } else {
+      notify.error(data.error || "حدث خطأ");
+    }
+  } catch (err) {
+    console.error(err);
+    notify.error("خطأ في الإرسال");
+  } finally {
+    setUploading(false);
+  }
+};
 
   // 🔐 عرض شاشة التحميل أثناء التحقق من المصادقة
   if (checkingAuth) {
@@ -243,7 +298,7 @@ export default function AddProductPage() {
               onChange={handleChange}
               placeholder="ادخل اسم المنتج"
               className="w-full rounded-lg p-2 bg-yellow-50 border border-gray-300 focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500"
-              required
+              
             />
           </div>
 
@@ -254,7 +309,7 @@ export default function AddProductPage() {
               value={formData.category}
               onChange={handleChange}
               className="w-full rounded-lg p-2 bg-yellow-50 border border-gray-300 focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500"
-              required
+              
             >
               <option value="">اختر الفئة</option>
               {categories.map((cat) => (
@@ -276,7 +331,7 @@ export default function AddProductPage() {
             placeholder="وصف المنتج"
             className="w-full rounded-lg p-2 bg-yellow-50 border border-gray-300 focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500"
             rows="3"
-            required
+            
           />
         </div>
 
@@ -291,7 +346,7 @@ export default function AddProductPage() {
               value={formData.price}
               onChange={handleChange}
               className="w-full rounded-lg p-2 bg-yellow-50 border border-gray-300 focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500"
-              required
+              
               min="0"
               step="0.01"
             />
@@ -340,7 +395,7 @@ export default function AddProductPage() {
               value={formData.stock}
               onChange={handleChange}
               className="w-full rounded-lg p-2 bg-yellow-50 border border-gray-300 focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500"
-              required
+              
               min="0"
             />
           </div>
@@ -365,7 +420,7 @@ export default function AddProductPage() {
             name="image"
             accept="image/*"
             onChange={handleChange}
-            required
+            
             className="w-full p-2 bg-yellow-50 rounded-lg border border-gray-300 focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500"
           />
           {imagePreviews.main && (

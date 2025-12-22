@@ -54,6 +54,7 @@ export default function AdminHeroPage() {
       ...prev,
       [name]: value,
     }));
+    
   };
 
   const handleImageChange = (e) => {
@@ -271,7 +272,7 @@ export default function AdminHeroPage() {
                   value={formData.title}
                   onChange={handleInputChange}
                   className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-rose-400"
-                  required
+                  
                 />
               </div>
               <div>
@@ -285,7 +286,7 @@ export default function AdminHeroPage() {
                   value={formData.subtitle}
                   onChange={handleInputChange}
                   className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-rose-400"
-                  required
+                  
                 />
               </div>
               <div>
@@ -299,7 +300,7 @@ export default function AdminHeroPage() {
                   value={formData.buttonText}
                   onChange={handleInputChange}
                   className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-rose-400"
-                  required
+                  
                 />
               </div>
               <div>
@@ -313,7 +314,7 @@ export default function AdminHeroPage() {
                   onChange={handleInputChange}
                   className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-rose-400"
                   placeholder="رابط التصنيف اذا ما عرفتي كيف كلمي الدعم"
-                  required
+                  
                 />
               </div>
             </div>

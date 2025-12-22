@@ -165,11 +165,10 @@ export default function HeroSection() {
           setSlides(data.heroes);
         } else {
           // استخدام بيانات افتراضية إذا فشل الجلب
-          setSlides(getDefaultSlides());
-        }
+console.log("test")   
+     }
       } catch (err) {
         console.error("Failed to fetch hero slides:", err);
-        setSlides(getDefaultSlides());
       } finally {
         setLoading(false);
       }
@@ -179,16 +178,16 @@ export default function HeroSection() {
   }, []);
 
   // بيانات افتراضية للطوارئ
-  const getDefaultSlides = () => [
-    {
-      _id: 1,
-      image: "https://images.unsplash.com/photo-1607082350899-7e105aa886ae?auto=format&fit=crop&w=2000&q=80",
-      title: "أحدث الهواتف الذكية",
-      subtitle: "خصم يصل إلى 30% على الموديلات الجديدة",
-      buttonText: "تسوق الآن",
-      buttonLink: "/category/phones",
-    }
-  ];
+  // const getDefaultSlides = () => [
+  //   {
+  //     _id: 1,
+  //     image: "https://images.unsplash.com/photo-1607082350899-7e105aa886ae?auto=format&fit=crop&w=2000&q=80",
+  //     title: "أحدث الهواتف الذكية",
+  //     subtitle: "خصم يصل إلى 30% على الموديلات الجديدة",
+  //     buttonText: "تسوق الآن",
+  //     buttonLink: "/category/phones",
+  //   }
+  // ];
 
   if (loading) {
     return (
@@ -246,12 +245,13 @@ export default function HeroSection() {
                   <p className="text-lg md:text-2xl text-gray-300 mb-8 drop-shadow-md max-w-2xl">
                     {slide.subtitle}
                   </p>
-                  <button
+                  {slide.buttonText !== "" && (<button
                     onClick={() => (window.location.href = slide.buttonLink)}
                     className="bg-amber-500 text-white font-semibold px-6 py-3 rounded-full hover:bg-rose-400 hover:text-amber-100 transition hover:scale-105"
                   >
                     {slide.buttonText}
-                  </button>
+                  </button>)}
+                  
                 </div>
               </div>
             </SwiperSlide>

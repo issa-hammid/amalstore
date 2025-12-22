@@ -236,7 +236,7 @@ export default function EditProductPage() {
               onChange={handleChange}
               placeholder="ادخل اسم المنتج"
               className="w-full rounded-lg p-2 bg-yellow-50 border border-gray-300 focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500"
-              required
+              
             />
           </div>
 
@@ -247,7 +247,7 @@ export default function EditProductPage() {
               value={formData.category}
               onChange={handleChange}
               className="w-full rounded-lg p-2 bg-yellow-50 border border-gray-300 focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500"
-              required
+              
             >
               <option value="">اختر الفئة</option>
               {categories.map((cat) => (
@@ -269,7 +269,7 @@ export default function EditProductPage() {
             placeholder="وصف المنتج"
             className="w-full rounded-lg p-2 bg-yellow-50 border border-gray-300 focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500"
             rows="3"
-            required
+            
           />
         </div>
 
@@ -284,7 +284,7 @@ export default function EditProductPage() {
               value={formData.price}
               onChange={handleChange}
               className="w-full rounded-lg p-2 bg-yellow-50 border border-gray-300 focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500"
-              required
+              
             />
           </div>
           
@@ -324,7 +324,7 @@ export default function EditProductPage() {
               value={formData.stock}
               onChange={handleChange}
               className="w-full rounded-lg p-2 bg-yellow-50 border border-gray-300 focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500"
-              required
+              
             />
           </div>
           

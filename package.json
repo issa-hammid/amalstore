@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "cloudinary": "^2.8.0",
+    "imagekit": "^6.0.0",
     "lucide-react": "^0.553.0",
     "mongoose": "^8.19.3",
     "next": "16.0.1",

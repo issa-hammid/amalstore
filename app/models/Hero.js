@@ -3,31 +3,31 @@ import mongoose from 'mongoose';
 const heroSchema = new mongoose.Schema({
   title: {
     type: String,
-    required: true,
+    // required: true,
     trim: true
   },
   subtitle: {
     type: String,
-    required: true,
+    // required: true,
     trim: true
   },
   buttonText: {
     type: String,
-    required: true,
+    // required: true,
     trim: true
   },
   buttonLink: {
     type: String,
-    required: true,
+    // required: true,
     trim: true
   },
   image: {
-    type: String, // URL من Cloudinary
-    required: true
+    type: String, 
+    // required: true
   },
   imagePublicId: {
-    type: String, // Public ID في Cloudinary للحذف
-    required: true
+    type: String, 
+    // required: true
   },
   order: {
     type: Number,

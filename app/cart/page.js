@@ -75,102 +75,38 @@ const fetchCartCategories = async (cartItems) => {
   }
 };
 
-// const sendTelegramNotification = async (orderData) => {
-
-//   try {
-//     const chatId = "5485520710";
-//     const botToken = "8284131441:AAGHKywsX0WyfZFpnUml4ywtkjL4pfQeo6E";
-    
-//     const message = `
-// 🛍️ *طلب جديد من Amal Store*
-
-// 👤 *العميل:* ${orderData.customer.name}
-// 📞 *الجوال:* ${orderData.customer.phone}
-// ${orderData.customer.whatsapp ? `📱 *الواتساب:* ${orderData.customer.whatsapp}` : ''}
-// 📍 *العنوان:* ${orderData.customer.address}
-// ${orderData.customer.notes ? `📝 *ملاحظات:* ${orderData.customer.notes}` : ''}
-
-// 💳 *طريقة الدفع:* ${orderData.paymentMethod === 'cash' ? 'نقدي عند الاستلام' : 
-//                    orderData.paymentMethod === 'mobile_transfer' ? 'تحويل عبر الجوال' : 
-//                    'تحويل بنكي'}
-
-// ${orderData.paymentMethod !== 'cash' ? `
-// 🏦 *معلومات التحويل:*
-// ${orderData.paymentMethod === 'mobile_transfer' ? 
-//   `📱 رقم الجوال: 0592543708` : 
-//   `📋 رقم IBAN: PS17PALS045230526340993100000`}
-// ` : ''}
-
-// 🛒 *المنتجات:*
-// ${orderData.items.map(item => `• ${item.name} ${item.color ? `(${item.color.colorName})` : ''} ×${item.quantity} - ₪${(item.price * item.quantity).toFixed(2)} ${item.categoryName ? `[${item.categoryName}]` : ''}`).join('\n')}
-
-// ${orderData.items.some(item => item.categoryName && item.categoryName !== 'منتجات متنوعة') ? `
-// 📊 *ملخص التصنيفات:*
-// ${Object.entries(
-//   orderData.items.reduce((acc, item) => {
-//     const category = item.categoryName || 'منتجات متنوعة';
-//     acc[category] = (acc[category] || 0) + item.quantity;
-//     return acc;
-//   }, {})
-// ).map(([category, count]) => `• ${category}: ${count} منتج`).join('\n')}
-// ` : ''}
-
-// 💰 *المجموع:* ₪${orderData.total.toFixed(2)}
-// ⏰ *الوقت:* ${new Date().toLocaleString('ar-EG')}
-
-// 📞 *اتصل الآن:* ${orderData.customer.phone}
-// ${orderData.customer.whatsapp ? `💬 *راسل على واتساب:* https://wa.me/970${orderData.customer.whatsapp.replace(/^0/, '')}` : ''}`.trim();
-
-//     const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-//       method: 'POST',
-//       headers: {
-//         'Content-Type': 'application/json',
-//       },
-//       body: JSON.stringify({
-//         chat_id: chatId,
-//         text: message,
-//         parse_mode: 'Markdown',
-//         disable_web_page_preview: true
-//       })
-//     });
-
-//     const result = await response.json();
-    
-//     if (!result.ok) {
-//       throw new Error(result.description || 'Failed to send message');
-//     }
-    
-//     return result;
-    
-//   } catch (error) {
-//     console.error('Error sending Telegram notification:', error);
-//     throw error;
-//   }
-// };
-
 const sendTelegramNotification = async (orderData) => {
   try {
-    const chatId = "5485520710";
-    const botToken = "8284131441:AAGHKywsX0WyfZFpnUml4ywtkjL4pfQeo6E";
+    const chatId = "5485520710" // استخدم متغيرات البيئة
+    const botToken = "8284131441:AAGHKywsX0WyfZFpnUml4ywtkjL4pfQeo6E"
     
-    // معالجة رقم الواتساب لجميع الأشكال
     let whatsappLink = '';
     if (orderData.customer.whatsapp) {
-      let cleanNumber = orderData.customer.whatsapp.replace(/\s+/g, ''); // إزالة المسافات
+      let cleanNumber = orderData.customer.whatsapp.replace(/\s+/g, '');
       
-      if (cleanNumber.startsWith('+970')) {
-        // إذا بدأ بـ +970 نستخدمه مباشرة بعد إزالة الـ +
-        cleanNumber = '970' + cleanNumber.substring(4);
-      } else if (cleanNumber.startsWith('059') || cleanNumber.startsWith('056')) {
-        // إذا بدأ بـ 059 أو 056 نستخدم 972 بدل الصفر
-        cleanNumber = '972' + cleanNumber.substring(1);
-      } else if (cleanNumber.startsWith('970')) {
-        // إذا كان مكتوباً 970 مباشرة نستخدمه كما هو
-        cleanNumber = cleanNumber;
-      } else {
-        // لأي شكل آخر نستخدم 972 مع إزالة أي رمز دولي
-        cleanNumber = '972' + cleanNumber.replace(/^\+?970?/, '').replace(/^0/, '');
+      // حل شامل لجميع الأشكال
+      if (cleanNumber.startsWith('+')) {
+        // إذا بدأ بـ + نزيله فقط
+        cleanNumber = cleanNumber.substring(1);
+      } else if (cleanNumber.startsWith('00')) {
+        // إذا بدأ بـ 00 نزيلهم
+        cleanNumber = cleanNumber.substring(2);
       }
+      
+      // التأكد من أن الرقم يبدأ بـ 972 فقط (للفلسطينية)
+      if (cleanNumber.startsWith('970')) {
+        // إذا كان 970 نحوله لـ 972
+        cleanNumber = '972' + cleanNumber.substring(3);
+      } else if (cleanNumber.startsWith('0')) {
+        // إذا بدأ بـ 0 (مثل 0568803133) نستبدله بـ 972
+        cleanNumber = '972' + cleanNumber.substring(1);
+      } else if (!cleanNumber.startsWith('972')) {
+        // إذا لم يبدأ بـ 972 ولا صفر ولا + نضيف 972 افتراضيًا
+        cleanNumber = '972' + cleanNumber;
+      }
+      
+      // التأكد من أن الرقم يحتوي على أرقام فقط
+      cleanNumber = cleanNumber.replace(/\D/g, '');
       
       whatsappLink = `💬 *راسل على واتساب:* https://wa.me/${cleanNumber}`;
     }
@@ -581,6 +517,7 @@ export default function CartPage() {
                         required
                         className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all text-sm sm:text-base"
                         placeholder="أدخل اسمك الكامل"
+                        style={{outline:"none"}}
                       />
                     </div>
 
@@ -596,6 +533,7 @@ export default function CartPage() {
                         required
                         className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all text-sm sm:text-base"
                         placeholder="05XXXXXXXX"
+                        style={{outline:"none"}}
                       />
                     </div>
 
@@ -610,6 +548,7 @@ export default function CartPage() {
                         onChange={handleInputChange}
                         className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all text-sm sm:text-base"
                         placeholder="05XXXXXXXX (اختياري)"
+                        style={{outline:"none"}}
                       />
                     </div>
 
@@ -625,6 +564,7 @@ export default function CartPage() {
                         rows="3"
                         className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all text-sm sm:text-base"
                         placeholder="أدخل عنوانك بالتفصيل (المنطقة، الشارع، رقم المنزل)"
+                        style={{outline:"none"}}
                       />
                     </div>
 
@@ -639,6 +579,7 @@ export default function CartPage() {
                         rows="2"
                         className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all text-sm sm:text-base"
                         placeholder="ملاحظات حول الطلب أو وقت التوصيل المناسب"
+                        style={{outline:"none"}}
                       />
                     </div>
 
