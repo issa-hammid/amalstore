@@ -92,33 +92,98 @@
 
 // export default cloudinary;
 
+// import ImageKit from "imagekit";
+// console.log("PUBLIC KEY:", process.env.IMAGEKIT_PUBLIC_KEY);
+
+// // إعداد ImageKit
+// const imagekit = new ImageKit({
+//   publicKey: process.env.IMAGEKIT_PUBLIC_KEY,
+//   privateKey: process.env.IMAGEKIT_PRIVATE_KEY,
+//   urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT,
+// });
+
+// // دالة لرفع صورة واحدة
+// export const uploadToImageKit = async (file) => {
+//   try {
+//     // تحويل File إلى buffer
+//     const arrayBuffer = await file.arrayBuffer();
+//     const buffer = Buffer.from(arrayBuffer);
+
+//     // رفع الصورة
+//     const result = await imagekit.upload({
+//       file: buffer,
+//       fileName: file.name,
+//       folder: "/hero-slides", // نفس المجلد القديم
+//     });
+
+//     return {
+//       success: true,
+//       url: result.url,
+//       fileId: result.fileId, // بديل public_id
+//     };
+//   } catch (error) {
+//     console.error("ImageKit upload error:", error);
+//     return {
+//       success: false,
+//       error: error.message,
+//     };
+//   }
+// };
+
+// // دالة لحذف صورة باستخدام fileId
+// export const deleteFromImageKit = async (fileId) => {
+//   try {
+//     const result = await imagekit.deleteFile(fileId);
+//     return {
+//       success: true,
+//       message: "تم حذف الصورة بنجاح",
+//     };
+//   } catch (error) {
+//     console.error("ImageKit delete error:", error);
+//     return {
+//       success: false,
+//       error: error.message,
+//     };
+//   }
+// };
+
+// // دالة لرفع ملفات متعددة
+// export const uploadMultipleToImageKit = async (files) => {
+//   const uploadPromises = files.map((file) => uploadToImageKit(file));
+//   const results = await Promise.all(uploadPromises);
+//   return results;
+// };
+
+// export default imagekit;
 import ImageKit from "imagekit";
 
-// إعداد ImageKit
-const imagekit = new ImageKit({
-  publicKey: process.env.IMAGEKIT_PUBLIC_KEY,
-  privateKey: process.env.IMAGEKIT_PRIVATE_KEY,
-  urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT,
-});
+// دالة لإنشاء instance (مهم جدًا تكون داخل function)
+const getImageKit = () => {
+  return new ImageKit({
+    publicKey: process.env.IMAGEKIT_PUBLIC_KEY,
+    privateKey: process.env.IMAGEKIT_PRIVATE_KEY,
+    urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT,
+  });
+};
 
-// دالة لرفع صورة واحدة
+// رفع صورة واحدة
 export const uploadToImageKit = async (file) => {
   try {
-    // تحويل File إلى buffer
+    const imagekit = getImageKit();
+
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // رفع الصورة
     const result = await imagekit.upload({
       file: buffer,
       fileName: file.name,
-      folder: "/hero-slides", // نفس المجلد القديم
+      folder: "/hero-slides",
     });
 
     return {
       success: true,
       url: result.url,
-      fileId: result.fileId, // بديل public_id
+      fileId: result.fileId,
     };
   } catch (error) {
     console.error("ImageKit upload error:", error);
@@ -129,10 +194,13 @@ export const uploadToImageKit = async (file) => {
   }
 };
 
-// دالة لحذف صورة باستخدام fileId
+// حذف صورة
 export const deleteFromImageKit = async (fileId) => {
   try {
-    const result = await imagekit.deleteFile(fileId);
+    const imagekit = getImageKit();
+
+    await imagekit.deleteFile(fileId);
+
     return {
       success: true,
       message: "تم حذف الصورة بنجاح",
@@ -146,11 +214,7 @@ export const deleteFromImageKit = async (fileId) => {
   }
 };
 
-// دالة لرفع ملفات متعددة
+// رفع عدة صور
 export const uploadMultipleToImageKit = async (files) => {
-  const uploadPromises = files.map((file) => uploadToImageKit(file));
-  const results = await Promise.all(uploadPromises);
-  return results;
+  return await Promise.all(files.map(uploadToImageKit));
 };
-
-export default imagekit;
