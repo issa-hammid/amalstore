@@ -526,11 +526,161 @@
 //   }
 // }
 
+// import { NextResponse } from "next/server";
+// import { connectMongoDB } from "@/app/DBconfig/mongoDB";
+// import Category from "@/app/models/Category";
+// import Product from "@/app/models/product";
+// import imagekit from "../../lib/imagekit";
+
+// export async function POST(req) {
+//   try {
+//     await connectMongoDB();
+//     const formData = await req.formData();
+
+//     // 🔴 الاسم إجباري
+//     const name = formData.get("name");
+//     if (!name || !name.trim()) {
+//       return NextResponse.json(
+//         { error: "اسم المنتج مطلوب" },
+//         { status: 400 }
+//       );
+//     }
+
+//     // 🟢 حقول اختيارية
+//     const description = formData.get("description") || undefined;
+
+//     const priceRaw = formData.get("price");
+//     const price = priceRaw ? parseFloat(priceRaw) : undefined;
+
+//     const oldPriceRaw = formData.get("oldPrice");
+//     const oldPrice = oldPriceRaw ? parseFloat(oldPriceRaw) : undefined;
+
+//     const discountRaw = formData.get("discountPercent");
+//     const discountPercent = discountRaw ? parseFloat(discountRaw) : undefined;
+
+//     const isFeatured = formData.get("isFeatured") === "true";
+
+//     const stockRaw = formData.get("stock");
+//     const stock = stockRaw ? parseInt(stockRaw) : undefined;
+
+//     // 🟢 التصنيف اختياري
+//     const categoryId = formData.get("category");
+//     let category = undefined;
+
+//     if (categoryId) {
+//       const foundCategory = await Category.findById(categoryId);
+//       if (foundCategory) {
+//         category = foundCategory._id;
+//       }
+//     }
+
+//     // 🟢 الصورة الرئيسية اختيارية
+//     let mainImageUrl = undefined;
+//     const mainImageFile = formData.get("image");
+
+//     if (mainImageFile && mainImageFile.size > 0) {
+//       const arrayBuffer = await mainImageFile.arrayBuffer();
+//       const buffer = Buffer.from(arrayBuffer);
+
+//       const uploadResult = await imagekit.upload({
+//         file: buffer,
+//         fileName: mainImageFile.name,
+//         folder: "/products",
+//       });
+
+//       mainImageUrl = uploadResult.url;
+//     }
+
+//     // 🟢 الألوان اختيارية
+//     const processedColors = [];
+//     const colorIndexes = new Set();
+
+//     for (let key of formData.keys()) {
+//       const match = key.match(/colors\[(\d+)\]/);
+//       if (match) colorIndexes.add(match[1]);
+//     }
+
+//     for (let index of colorIndexes) {
+//       const colorName = formData.get(`colors[${index}][colorName]`);
+//       const colorStockRaw = formData.get(`colors[${index}][stock]`);
+//       const colorImageFile = formData.get(`colors[${index}][image]`);
+
+//       // تجاهل اللون الفاضي بالكامل
+//       if (
+//         !colorName &&
+//         !colorStockRaw &&
+//         (!colorImageFile || colorImageFile.size === 0)
+//       ) {
+//         continue;
+//       }
+
+//       let colorImageUrl = "";
+
+//       if (colorImageFile && colorImageFile.size > 0) {
+//         const arrayBuffer = await colorImageFile.arrayBuffer();
+//         const buffer = Buffer.from(arrayBuffer);
+
+//         const uploadResult = await imagekit.upload({
+//           file: buffer,
+//           fileName: colorImageFile.name,
+//           folder: "/products/colors",
+//         });
+
+//         colorImageUrl = uploadResult.url;
+//       }
+
+//       processedColors.push({
+//         colorName: colorName || "",
+//         stock: colorStockRaw ? parseInt(colorStockRaw) : 0,
+//         image: colorImageUrl,
+//       });
+//     }
+
+//     // 🟢 بناء بيانات المنتج (بس اللي موجود)
+//     const productData = {
+//       name, // إجباري
+//       ...(description && { description }),
+//       ...(price !== undefined && { price }),
+//       ...(oldPrice !== undefined && { oldPrice }),
+//       ...(discountPercent !== undefined && { discountPercent }),
+//       ...(stock !== undefined && { stock }),
+//       ...(category && { category }),
+//       ...(mainImageUrl && { image: mainImageUrl }),
+//       isFeatured,
+//       ...(processedColors.length > 0 && { colors: processedColors }),
+//     };
+
+//     const newProduct = await Product.create(productData);
+
+//     return NextResponse.json(
+//       {
+//         message: "تم إنشاء المنتج بنجاح",
+//         product: newProduct,
+//       },
+//       { status: 201 }
+//     );
+//   } catch (error) {
+//     console.error("❌ Error:", error);
+//     return NextResponse.json(
+//       { error: "حدث خطأ أثناء إنشاء المنتج" },
+//       { status: 500 }
+//     );
+//   }
+// }
 import { NextResponse } from "next/server";
 import { connectMongoDB } from "@/app/DBconfig/mongoDB";
 import Category from "@/app/models/Category";
 import Product from "@/app/models/product";
-import imagekit from "../../lib/imagekit";
+import ImageKit from "imagekit";
+
+// 🔥 إنشاء ImageKit بطريقة آمنة (runtime only)
+const getImageKit = () => {
+  return new ImageKit({
+    publicKey: process.env.IMAGEKIT_PUBLIC_KEY,
+    privateKey: process.env.IMAGEKIT_PRIVATE_KEY,
+    urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT,
+  });
+};
 
 export async function POST(req) {
   try {
@@ -546,7 +696,7 @@ export async function POST(req) {
       );
     }
 
-    // 🟢 حقول اختيارية
+    // 🟢 بيانات اختيارية
     const description = formData.get("description") || undefined;
 
     const priceRaw = formData.get("price");
@@ -563,22 +713,22 @@ export async function POST(req) {
     const stockRaw = formData.get("stock");
     const stock = stockRaw ? parseInt(stockRaw) : undefined;
 
-    // 🟢 التصنيف اختياري
+    // 🟢 التصنيف
     const categoryId = formData.get("category");
     let category = undefined;
 
     if (categoryId) {
       const foundCategory = await Category.findById(categoryId);
-      if (foundCategory) {
-        category = foundCategory._id;
-      }
+      if (foundCategory) category = foundCategory._id;
     }
 
-    // 🟢 الصورة الرئيسية اختيارية
+    // 🟢 رفع الصورة الرئيسية
     let mainImageUrl = undefined;
     const mainImageFile = formData.get("image");
 
     if (mainImageFile && mainImageFile.size > 0) {
+      const imagekit = getImageKit();
+
       const arrayBuffer = await mainImageFile.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
 
@@ -591,7 +741,7 @@ export async function POST(req) {
       mainImageUrl = uploadResult.url;
     }
 
-    // 🟢 الألوان اختيارية
+    // 🟢 الألوان
     const processedColors = [];
     const colorIndexes = new Set();
 
@@ -605,7 +755,6 @@ export async function POST(req) {
       const colorStockRaw = formData.get(`colors[${index}][stock]`);
       const colorImageFile = formData.get(`colors[${index}][image]`);
 
-      // تجاهل اللون الفاضي بالكامل
       if (
         !colorName &&
         !colorStockRaw &&
@@ -617,6 +766,8 @@ export async function POST(req) {
       let colorImageUrl = "";
 
       if (colorImageFile && colorImageFile.size > 0) {
+        const imagekit = getImageKit();
+
         const arrayBuffer = await colorImageFile.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
 
@@ -636,9 +787,9 @@ export async function POST(req) {
       });
     }
 
-    // 🟢 بناء بيانات المنتج (بس اللي موجود)
+    // 🟢 بناء المنتج
     const productData = {
-      name, // إجباري
+      name,
       ...(description && { description }),
       ...(price !== undefined && { price }),
       ...(oldPrice !== undefined && { oldPrice }),
@@ -661,8 +812,12 @@ export async function POST(req) {
     );
   } catch (error) {
     console.error("❌ Error:", error);
+
     return NextResponse.json(
-      { error: "حدث خطأ أثناء إنشاء المنتج" },
+      {
+        error: "حدث خطأ أثناء إنشاء المنتج",
+        details: error.message,
+      },
       { status: 500 }
     );
   }
