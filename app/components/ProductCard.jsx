@@ -188,12 +188,14 @@ export default function ProductCard({ product, onColorClick, loading = false }) 
   }
 
   // 🔹 البطاقة الفعلية بعد التحميل
-  const displayImage = product.currentImage || product.image;
-  const displayStock = product.currentStock || product.stock;
+  const displayImage = product.currentImage || product.image || (product.colors && product.colors.find(c => c.image)?.image) || "";
+  const displayStock = product.currentStock !== undefined ? product.currentStock : (product.colors && product.colors[0]?.stock !== undefined ? product.colors[0].stock : product.stock);
   const hasColors = product.colors && product.colors.length > 0;
 
   const handleAddToCart = () => {
-    addToCart(product, product.currentColor, displayImage);
+    const colorToAdd = product.currentColor || (!product.image && hasColors ? (product.colors.find(c => c.stock > 0) || product.colors[0]) : null);
+    const imageToAdd = displayImage || colorToAdd?.image || product.image || "";
+    addToCart(product, colorToAdd, imageToAdd);
     notify.success("تم إضافة المنتج بنجاح");
   };
 
@@ -202,11 +204,17 @@ export default function ProductCard({ product, onColorClick, loading = false }) 
       {/* الصورة */}
       <div className="relative overflow-hidden flex-shrink-0">
         <Link href={`/products/${product._id}`}>
-          <img
-            src={displayImage}
-            alt={product.name}
-            className="w-full h-40 sm:h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-          />
+          {displayImage ? (
+            <img
+              src={displayImage}
+              alt={product.name}
+              className="w-full h-40 sm:h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+          ) : (
+            <div className="w-full h-40 sm:h-48 bg-gray-100 flex items-center justify-center text-gray-400">
+              لا توجد صورة
+            </div>
+          )}
         </Link>
 
         {/* الخصم */}
@@ -261,24 +269,27 @@ export default function ProductCard({ product, onColorClick, loading = false }) 
         {/* ألوان المنتج */}
         {hasColors && (
           <div className="flex gap-1 mb-3 flex-wrap">
-            <button
-              onClick={() => onColorClick(product._id, null, true)}
-              className={`w-8 h-8 rounded-full border overflow-hidden transition-all duration-200 hover:scale-110 ${
-                displayImage === product.image
-                  ? "border-yellow-400 ring-1 ring-yellow-200"
-                  : "border-gray-300 hover:border-yellow-400"
-              }`}
-              title="الصورة الأساسية"
-            >
-              <img src={product.image} alt="أساسي" className="w-full h-full object-cover" />
-            </button>
+            {/* عرض زر الصورة الأساسية فقط إذا كانت موجودة */}
+            {product.image && (
+              <button
+                onClick={() => onColorClick(product._id, null, true)}
+                className={`w-8 h-8 rounded-full border overflow-hidden transition-all duration-200 hover:scale-110 ${
+                  displayImage === product.image
+                    ? "border-yellow-400 ring-1 ring-yellow-200"
+                    : "border-gray-300 hover:border-yellow-400"
+                }`}
+                title="الصورة الأساسية"
+              >
+                <img src={product.image} alt="أساسي" className="w-full h-full object-cover" />
+              </button>
+            )}
 
             {product.colors.map((color, index) => (
               <button
                 key={index}
                 onClick={() => onColorClick(product._id, color)}
                 className={`w-8 h-8 rounded-full border overflow-hidden transition-all duration-200 hover:scale-110 ${
-                  displayImage === color.image
+                  displayImage === color.image || (product.currentColor && product.currentColor.colorName === color.colorName)
                     ? "border-yellow-400 ring-1 ring-yellow-200"
                     : "border-gray-300 hover:border-yellow-400"
                 }`}

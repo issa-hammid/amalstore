@@ -559,6 +559,12 @@ export async function PUT(request, { params }) {
     // تحديث الألوان فقط إذا كان هناك ألوان
     if (processedColors.length > 0) {
       updateData.colors = processedColors;
+      if (updateData.stock === undefined || updateData.stock === 0) {
+        const totalFromColors = processedColors.reduce((sum, c) => sum + (c.stock || 0), 0);
+        if (totalFromColors > 0) {
+          updateData.stock = totalFromColors;
+        }
+      }
     }
 
     console.log("🔄 جاري تحديث المنتج...", updateData);

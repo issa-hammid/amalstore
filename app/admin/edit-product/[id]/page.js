@@ -131,7 +131,17 @@ export default function EditProductPage() {
     } else {
       newColors[index][field] = value;
     }
-    setFormData({ ...formData, colors: newColors });
+
+    let updatedStock = formData.stock;
+    if (field === "stock") {
+      const anyStock = newColors.some(c => c.stock !== "" && !isNaN(Number(c.stock)));
+      if (anyStock) {
+        const totalStock = newColors.reduce((sum, c) => sum + (Number(c.stock) || 0), 0);
+        updatedStock = totalStock > 0 ? String(totalStock) : "";
+      }
+    }
+
+    setFormData({ ...formData, colors: newColors, stock: updatedStock });
   };
 
   // 🟢 إضافة لون جديد
@@ -150,7 +160,13 @@ export default function EditProductPage() {
   const removeColor = (index) => {
     const newColors = formData.colors.filter((_, i) => i !== index);
     const newPreviews = imagePreviews.colors.filter((_, i) => i !== index);
-    setFormData({ ...formData, colors: newColors });
+    const anyStock = newColors.some(c => c.stock !== "" && !isNaN(Number(c.stock)));
+    let updatedStock = formData.stock;
+    if (anyStock) {
+      const totalStock = newColors.reduce((sum, c) => sum + (Number(c.stock) || 0), 0);
+      updatedStock = totalStock > 0 ? String(totalStock) : "";
+    }
+    setFormData({ ...formData, colors: newColors, stock: updatedStock });
     setImagePreviews(prev => ({ ...prev, colors: newPreviews }));
   };
 
@@ -167,9 +183,9 @@ export default function EditProductPage() {
       fd.append("description", formData.description);
       fd.append("price", formData.price);
       fd.append("oldPrice", formData.oldPrice);
-      fd.append("discountPercent", formData.discountPercent);
-      fd.append("isFeatured", formData.isFeatured);
-      fd.append("stock", formData.stock);
+      const colorStockSum = formData.colors.reduce((sum, c) => sum + (Number(c.stock) || 0), 0);
+      const effectiveStock = formData.stock || (colorStockSum > 0 ? String(colorStockSum) : "");
+      fd.append("stock", effectiveStock);
       fd.append("category", formData.category);
       
       // إذا المستخدم رفع صورة جديدة
@@ -316,7 +332,9 @@ export default function EditProductPage() {
         {/* الكمية والمنتج المميز */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block mb-2 text-gray-700">الكمية المتاحة</label>
+            <label className="block mb-2 text-gray-700">
+              الكمية المتاحة الإجمالية <span className="text-gray-400 font-normal text-xs">(تُحسب تلقائياً من مجموع الألوان)</span>
+            </label>
             <input
               type="number"
               name="stock"
@@ -324,7 +342,6 @@ export default function EditProductPage() {
               value={formData.stock}
               onChange={handleChange}
               className="w-full rounded-lg p-2 bg-yellow-50 border border-gray-300 focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500"
-              
             />
           </div>
           
@@ -342,7 +359,9 @@ export default function EditProductPage() {
 
         {/* صورة المنتج الرئيسية */}
         <div>
-          <label className="block mb-2 text-gray-700">صورة المنتج الرئيسية</label>
+          <label className="block mb-2 text-gray-700">
+            صورة المنتج الرئيسية <span className="text-gray-400 font-normal text-sm">(اختياري)</span>
+          </label>
           <input
             type="file"
             name="image"

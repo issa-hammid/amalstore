@@ -122,7 +122,17 @@ export default function AddProductPage() {
     } else {
       newColors[index][field] = value;
     }
-    setFormData({ ...formData, colors: newColors });
+
+    let updatedStock = formData.stock;
+    if (field === "stock") {
+      const anyStock = newColors.some(c => c.stock !== "" && !isNaN(Number(c.stock)));
+      if (anyStock) {
+        const totalStock = newColors.reduce((sum, c) => sum + (Number(c.stock) || 0), 0);
+        updatedStock = totalStock > 0 ? String(totalStock) : "";
+      }
+    }
+
+    setFormData({ ...formData, colors: newColors, stock: updatedStock });
   };
 
   // 🟢 إضافة لون جديد
@@ -141,7 +151,13 @@ export default function AddProductPage() {
   const removeColor = (index) => {
     const newColors = formData.colors.filter((_, i) => i !== index);
     const newPreviews = imagePreviews.colors.filter((_, i) => i !== index);
-    setFormData({ ...formData, colors: newColors });
+    const anyStock = newColors.some(c => c.stock !== "" && !isNaN(Number(c.stock)));
+    let updatedStock = formData.stock;
+    if (anyStock) {
+      const totalStock = newColors.reduce((sum, c) => sum + (Number(c.stock) || 0), 0);
+      updatedStock = totalStock > 0 ? String(totalStock) : "";
+    }
+    setFormData({ ...formData, colors: newColors, stock: updatedStock });
     setImagePreviews(prev => ({ ...prev, colors: newPreviews }));
   };
 
@@ -219,11 +235,12 @@ export default function AddProductPage() {
     if (formData.description) fd.append("description", formData.description);
     if (formData.price) fd.append("price", formData.price);
     if (formData.oldPrice) fd.append("oldPrice", formData.oldPrice);
-    if (formData.discountPercent) fd.append("discountPercent", formData.discountPercent);
-    if (formData.stock) fd.append("stock", formData.stock);
+    const colorStockSum = formData.colors.reduce((sum, c) => sum + (Number(c.stock) || 0), 0);
+    const effectiveStock = formData.stock || (colorStockSum > 0 ? String(colorStockSum) : "");
+    if (effectiveStock) fd.append("stock", effectiveStock);
     if (formData.category) fd.append("category", formData.category);
 
-    fd.append("isFeatured", formData.isFeatured); // boolean عادي
+    fd.append("isFeatured", formData.isFeatured);
 
     if (formData.image) {
       fd.append("image", formData.image);
@@ -251,7 +268,22 @@ export default function AddProductPage() {
 
     if (res.ok) {
       notify.success("تم إضافة المنتج بنجاح");
-      // reset form...
+      setFormData({
+        name: "",
+        description: "",
+        image: null,
+        price: "",
+        oldPrice: "",
+        discountPercent: "",
+        isFeatured: false,
+        stock: "",
+        category: "",
+        colors: [{ colorName: "", image: null, stock: "" }],
+      });
+      setImagePreviews({
+        main: null,
+        colors: [],
+      });
     } else {
       notify.error(data.error || "حدث خطأ");
     }
@@ -387,7 +419,9 @@ export default function AddProductPage() {
         {/* الكمية والمنتج المميز */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block mb-2 text-gray-700">الكمية المتاحة</label>
+            <label className="block mb-2 text-gray-700">
+              الكمية المتاحة الإجمالية <span className="text-gray-400 font-normal text-xs">(تُحسب تلقائياً من مجموع الألوان إذا أدخلتها)</span>
+            </label>
             <input
               type="number"
               name="stock"
@@ -395,7 +429,6 @@ export default function AddProductPage() {
               value={formData.stock}
               onChange={handleChange}
               className="w-full rounded-lg p-2 bg-yellow-50 border border-gray-300 focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500"
-              
               min="0"
             />
           </div>
@@ -414,7 +447,9 @@ export default function AddProductPage() {
 
         {/* صورة المنتج الرئيسية */}
         <div>
-          <label className="block mb-2 text-gray-700">صورة المنتج الرئيسية</label>
+          <label className="block mb-2 text-gray-700">
+            صورة المنتج الرئيسية <span className="text-gray-400 font-normal text-sm">(اختياري - في حال عدم الرفع سيتم اعتماد صور المنتجات الفرعية ليختار الزبون منها)</span>
+          </label>
           <input
             type="file"
             name="image"

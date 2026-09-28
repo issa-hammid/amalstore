@@ -10,7 +10,7 @@ const updateProductStock = async (cartItems) => {
   try {
     const stockUpdateData = {
       products: cartItems.map(item => ({
-        productId: item.id,
+        productId: item.productId || item.id.split('-')[0],
         quantity: item.quantity,
         colorName: item.color?.colorName || null
       }))
@@ -41,7 +41,7 @@ const updateProductStock = async (cartItems) => {
 // دالة جلب التصنيفات لجميع منتجات الكارت
 const fetchCartCategories = async (cartItems) => {
   try {
-    const productIds = cartItems.map(item => item.id);
+    const productIds = cartItems.map(item => item.productId || item.id.split('-')[0]);
     
     const response = await fetch('/api/cart/categories', {
       method: 'POST',

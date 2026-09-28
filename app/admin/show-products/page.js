@@ -914,9 +914,9 @@ export default function ShowProductsPage() {
                     {/* الصورة المصغرة */}
                     <td className="p-3">
                       <div className="w-12 h-12 bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center">
-                        {product.image ? (
+                        {product.image || (product.colors && product.colors.find(c => c.image)?.image) ? (
                           <img 
-                            src={product.image} 
+                            src={product.image || (product.colors && product.colors.find(c => c.image)?.image)} 
                             alt={product.name}
                             className="w-full h-full object-cover"
                           />
@@ -1009,9 +1009,9 @@ export default function ShowProductsPage() {
                   {/* الصورة */}
                   <div className="flex-shrink-0">
                     <div className="w-16 h-16 bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center">
-                      {product.image ? (
+                      {product.image || (product.colors && product.colors.find(c => c.image)?.image) ? (
                         <img 
-                          src={product.image} 
+                          src={product.image || (product.colors && product.colors.find(c => c.image)?.image)} 
                           alt={product.name}
                           className="w-full h-full object-cover"
                         />

@@ -1355,12 +1355,17 @@ export default function Home() {
         if (res.ok) {
           const featured = data.products
             .filter(product => product.isFeatured === true)
-            .map(product => ({
-              ...product,
-              currentImage: product.image,
-              currentStock: product.stock,
-              currentColor: null
-            }));
+            .map(product => {
+              const firstColor = product.colors?.find(c => c.image || c.stock > 0) || product.colors?.[0];
+              const defaultImage = product.image || firstColor?.image || "";
+              const defaultStock = product.image ? product.stock : (firstColor?.stock ?? product.stock);
+              return {
+                ...product,
+                currentImage: defaultImage,
+                currentStock: defaultStock,
+                currentColor: product.image ? null : firstColor
+              };
+            });
           setFeaturedProducts(featured);
         }
       } catch (error) {
@@ -1401,7 +1406,17 @@ export default function Home() {
           
           const productsMap = {};
           productsResults.forEach(result => {
-            productsMap[result.categoryId] = result.products;
+            productsMap[result.categoryId] = (result.products || []).map(product => {
+              const firstColor = product.colors?.find(c => c.image || c.stock > 0) || product.colors?.[0];
+              const defaultImage = product.image || firstColor?.image || "";
+              const defaultStock = product.image ? product.stock : (firstColor?.stock ?? product.stock);
+              return {
+                ...product,
+                currentImage: defaultImage,
+                currentStock: defaultStock,
+                currentColor: product.image ? null : firstColor
+              };
+            });
           });
           
           setCategoryProducts(productsMap);
@@ -1417,40 +1432,35 @@ export default function Home() {
   }, []);
   
   const handleColorClick = (productId, color, isMainImage = false, categoryId = null) => {
+    const updateProductHelper = (product) => {
+      if (product._id === productId) {
+        if (isMainImage && product.image) {
+          return {
+            ...product,
+            currentImage: product.image,
+            currentStock: product.stock,
+            currentColor: null
+          };
+        } else if (color) {
+          return {
+            ...product,
+            currentImage: color.image || product.image || (product.colors?.find(c => c.image)?.image) || "",
+            currentStock: color.stock !== undefined ? color.stock : product.stock,
+            currentColor: color
+          };
+        }
+      }
+      return product;
+    };
+
     if (categoryId) {
       setCategoryProducts(prev => ({
         ...prev,
-        [categoryId]: prev[categoryId]?.map(product => 
-          product._id === productId ? {
-            ...product,
-            currentImage: isMainImage ? product.image : (color.image || product.image),
-            currentStock: isMainImage ? product.stock : (color.stock || product.stock),
-            currentColor: isMainImage ? null : color
-          } : product
-        ) || []
+        [categoryId]: prev[categoryId]?.map(updateProductHelper) || []
       }));
     } else {
       setFeaturedProducts(prevProducts =>
-        prevProducts.map(product => {
-          if (product._id === productId) {
-            if (isMainImage) {
-              return {
-                ...product,
-                currentImage: product.image,
-                currentStock: product.stock,
-                currentColor: null
-              };
-            } else {
-              return {
-                ...product,
-                currentImage: color.image || product.image,
-                currentStock: color.stock || product.stock,
-                currentColor: color
-              };
-            }
-          }
-          return product;
-        })
+        prevProducts.map(updateProductHelper)
       );
     }
   };

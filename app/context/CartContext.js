@@ -267,7 +267,10 @@ export function CartProvider({ children }) {
   // ✅ إضافة منتج للسلة مع التحقق من الكمية
   const addToCart = async (product, selectedColor = null, selectedImage = null) => {
     const itemId = `${product._id}-${selectedColor?.colorName || 'main'}`;
-    const availableStock = selectedColor ? selectedColor.stock : product.stock;
+    const firstColor = product.colors?.find(c => c.image || c.stock > 0) || product.colors?.[0];
+    const availableStock = selectedColor 
+      ? selectedColor.stock 
+      : (product.stock !== undefined && product.stock !== null ? product.stock : (firstColor?.stock ?? 0));
 
     setCartItems(prev => {
       const existingItem = prev.find(item => item.id === itemId);
@@ -298,12 +301,13 @@ export function CartProvider({ children }) {
           return prev;
         }
         
+        const fallbackImage = selectedImage || product.image || selectedColor?.image || (product.colors && product.colors.find(c => c.image)?.image) || "";
         const cartItem = {
           id: itemId,
           productId: product._id,
           name: product.name,
           price: product.price,
-          image: selectedImage || product.image,
+          image: fallbackImage,
           color: selectedColor,
           quantity: 1,
           stock: availableStock,
@@ -425,7 +429,10 @@ export function CartProvider({ children }) {
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 const addToCartWithQuantity = (product, selectedColor = null, selectedImage = null, quantity = 1) => {
   const itemId = `${product._id}-${selectedColor?.colorName || 'main'}`;
-  const availableStock = selectedColor ? selectedColor.stock : product.stock;
+  const firstColor = product.colors?.find(c => c.image || c.stock > 0) || product.colors?.[0];
+  const availableStock = selectedColor 
+    ? selectedColor.stock 
+    : (product.stock !== undefined && product.stock !== null ? product.stock : (firstColor?.stock ?? 0));
 
   // إذا الكمية المطلوبة أكثر من المخزون، نضبطها للمخزون
   const finalQuantity = Math.min(quantity, availableStock);
@@ -454,12 +461,13 @@ const addToCartWithQuantity = (product, selectedColor = null, selectedImage = nu
       );
     } else {
       // إذا المنتج جديد
+      const fallbackImage = selectedImage || product.image || selectedColor?.image || (product.colors && product.colors.find(c => c.image)?.image) || "";
       const cartItem = {
         id: itemId,
         productId: product._id,
         name: product.name,
         price: product.price,
-        image: selectedImage || product.image,
+        image: fallbackImage,
         color: selectedColor,
         quantity: finalQuantity, // نستخدم الكمية المحددة
         stock: availableStock,

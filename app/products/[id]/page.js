@@ -873,12 +873,26 @@ export default function ProductDetailPage() {
         const data = await res.json();
         
         if (data.success) {
-          setProduct(data.product);
-          setSelectedImage(data.product.image);
-          setSelectedColor(null);
+          const prod = data.product;
+          setProduct(prod);
+          
+          const firstColor = prod.colors?.find(c => c.image) || prod.colors?.[0];
+          if (prod.image) {
+            setSelectedImage(prod.image);
+            setSelectedColor(null);
+          } else if (firstColor) {
+            setSelectedImage(firstColor.image || '');
+            setSelectedColor(firstColor);
+          } else {
+            setSelectedImage('');
+            setSelectedColor(null);
+          }
           
           // جلب المنتجات المشابهة بعد تحميل المنتج
-          fetchRelatedProducts(data.product.category?._id, data.product._id);
+          const catId = prod.category?._id || prod.category;
+          if (catId) {
+            fetchRelatedProducts(catId, prod._id);
+          }
         } else {
           setError(data.error || 'حدث خطأ في جلب البيانات');
         }
@@ -901,7 +915,7 @@ export default function ProductDetailPage() {
     
     try {
       setRelatedLoading(true);
-      const res = await fetch(`/api/products?category=${categoryId}&limit=4`);
+      const res = await fetch(`/api/categories/${categoryId}/products`);
       const data = await res.json();
       
       if (data.success) {
@@ -952,17 +966,20 @@ export default function ProductDetailPage() {
     if (!product) return 0;
     
     if (selectedColor) {
-      return selectedColor.stock;
+      return selectedColor.stock ?? 0;
     }
     
     if (product.colors && product.colors.length > 0) {
       const colorForSelectedImage = product.colors.find(color => color.image === selectedImage);
       if (colorForSelectedImage) {
-        return colorForSelectedImage.stock;
+        return colorForSelectedImage.stock ?? 0;
+      }
+      if (!product.image && product.colors[0]) {
+        return product.colors[0].stock ?? 0;
       }
     }
     
-    return product.stock;
+    return product.stock ?? 0;
   };
 
   const handleAddToCart = () => {
@@ -978,15 +995,24 @@ export default function ProductDetailPage() {
       return;
     }
 
-    addToCartWithQuantity(product, selectedColor, selectedImage, quantity);
-    notify.success(" تم إضافة المنتج بنجاح");
+    let colorToUse = selectedColor;
+    if (!colorToUse && !product.image && product.colors?.length > 0) {
+      colorToUse = product.colors.find(c => c.stock > 0) || product.colors[0];
+    }
+
+    const imageToUse = selectedImage || colorToUse?.image || product.image || '';
+
+    addToCartWithQuantity(product, colorToUse, imageToUse, quantity);
+    notify.success("تم إضافة المنتج بنجاح");
     setIsCartOpen(true);
     setQuantity(1);
   };
 
   // دالة لإضافة المنتج المشابه إلى السلة
   const handleAddRelatedToCart = (relatedProduct) => {
-    addToCartWithQuantity(relatedProduct, null, relatedProduct.image, 1);
+    const firstColor = relatedProduct.colors?.find(c => c.image || c.stock > 0) || relatedProduct.colors?.[0];
+    const img = relatedProduct.image || firstColor?.image || "";
+    addToCartWithQuantity(relatedProduct, relatedProduct.image ? null : firstColor, img, 1);
     notify.success("تم إضافة المنتج المشابه إلى السلة");
     setIsCartOpen(true);
   };
@@ -1044,7 +1070,10 @@ export default function ProductDetailPage() {
   const availableStock = getAvailableStock();
   const displayPrice = product.oldPrice && product.oldPrice > product.price ? product.oldPrice : null;
   
-  const allImages = [product.image];
+  const allImages = [];
+  if (product.image) {
+    allImages.push(product.image);
+  }
   if (product.colors && product.colors.length > 0) {
     product.colors.forEach(color => {
       if (color.image && !allImages.includes(color.image)) {
@@ -1065,7 +1094,7 @@ export default function ProductDetailPage() {
       }
     }
     
-    return 'أساسي';
+    return product.image ? 'أساسي' : '';
   };
 
   return (
@@ -1081,11 +1110,17 @@ export default function ProductDetailPage() {
               {/* الجزء الأيمن - الصور */}
               <div className="space-y-4">
                 <div className="bg-gray-100 rounded-xl overflow-hidden">
-                  <img
-                    src={selectedImage}
-                    alt={product.name}
-                    className="w-full h-80 lg:h-96 object-cover"
-                  />
+                  {selectedImage ? (
+                    <img
+                      src={selectedImage}
+                      alt={product.name}
+                      className="w-full h-80 lg:h-96 object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-80 lg:h-96 flex items-center justify-center text-gray-400">
+                      لا توجد صورة
+                    </div>
+                  )}
                 </div>
 
                 {allImages.length > 1 && (
@@ -1166,26 +1201,28 @@ export default function ProductDetailPage() {
                   <div className="space-y-3">
                     <h3 className="font-semibold text-lg">الألوان المتاحة:</h3>
                     <div className="flex gap-3 flex-wrap">
-                      <button
-                        onClick={() => {
-                          setSelectedColor(null);
-                          setSelectedImage(product.image);
-                          setQuantity(1);
-                        }}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
-                          !selectedColor && selectedImage === product.image
-                            ? 'border-amber-400 bg-amber-50 ring-2 ring-amber-200'
-                            : 'border-gray-300 hover:border-amber-400'
-                        }`}
-                      >
-                        <img
-                          src={product.image}
-                          alt="أساسي"
-                          className="w-8 h-8 rounded-full object-cover"
-                        />
-                        {/* <span className="text-sm">أساسي</span> */}
-                        <span className="text-xs text-gray-500">({product.stock})</span>
-                      </button>
+                      {product.image && (
+                        <button
+                          onClick={() => {
+                            setSelectedColor(null);
+                            setSelectedImage(product.image);
+                            setQuantity(1);
+                          }}
+                          className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
+                            !selectedColor && selectedImage === product.image
+                              ? 'border-amber-400 bg-amber-50 ring-2 ring-amber-200'
+                              : 'border-gray-300 hover:border-amber-400'
+                          }`}
+                        >
+                          <img
+                            src={product.image}
+                            alt="أساسي"
+                            className="w-8 h-8 rounded-full object-cover"
+                          />
+                          {/* <span className="text-sm">أساسي</span> */}
+                          <span className="text-xs text-gray-500">({product.stock})</span>
+                        </button>
+                      )}
 
                       {product.colors.map((color, index) => (
                         <button
@@ -1309,7 +1346,7 @@ export default function ProductDetailPage() {
                       <Link href={`/products/${relatedProduct._id}`}>
                         <div className="relative overflow-hidden">
                           <img
-                            src={relatedProduct.image}
+                            src={relatedProduct.image || (relatedProduct.colors && relatedProduct.colors.find(c => c.image)?.image) || ""}
                             alt={relatedProduct.name}
                             className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                           />

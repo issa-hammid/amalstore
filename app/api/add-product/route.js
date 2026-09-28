@@ -787,6 +787,14 @@ export async function POST(req) {
       });
     }
 
+    // 🟢 حساب الكمية الإجمالية إذا لم يتم تمريرها أو كانت 0 وتوجد كميات في الألوان
+    if ((stock === undefined || isNaN(stock) || stock === 0) && processedColors.length > 0) {
+      const totalFromColors = processedColors.reduce((sum, c) => sum + (c.stock || 0), 0);
+      if (totalFromColors > 0) {
+        stock = totalFromColors;
+      }
+    }
+
     // 🟢 بناء المنتج
     const productData = {
       name,

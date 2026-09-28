@@ -37,12 +37,17 @@ export default function CategoryPage() {
         
         if (productsData.success) {
           // إضافة الحالة الأولية للمنتجات
-          const productsWithState = productsData.products.map(product => ({
-            ...product,
-            currentImage: product.image,
-            currentStock: product.stock,
-            currentColor: null
-          }));
+          const productsWithState = productsData.products.map(product => {
+            const firstColor = product.colors?.find(c => c.image || c.stock > 0) || product.colors?.[0];
+            const defaultImage = product.image || firstColor?.image || "";
+            const defaultStock = product.image ? product.stock : (firstColor?.stock ?? product.stock);
+            return {
+              ...product,
+              currentImage: defaultImage,
+              currentStock: defaultStock,
+              currentColor: product.image ? null : firstColor
+            };
+          });
           setProducts(productsWithState);
         } else {
           setError('فشل في جلب المنتجات');
@@ -65,18 +70,18 @@ export default function CategoryPage() {
     setProducts(prevProducts =>
       prevProducts.map(product => {
         if (product._id === productId) {
-          if (isMainImage) {
+          if (isMainImage && product.image) {
             return {
               ...product,
               currentImage: product.image,
               currentStock: product.stock,
               currentColor: null
             };
-          } else {
+          } else if (color) {
             return {
               ...product,
-              currentImage: color.image || product.image,
-              currentStock: color.stock || product.stock,
+              currentImage: color.image || product.image || (product.colors?.find(c => c.image)?.image) || "",
+              currentStock: color.stock !== undefined ? color.stock : product.stock,
               currentColor: color
             };
           }

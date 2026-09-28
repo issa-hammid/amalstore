@@ -115,11 +115,27 @@ export async function POST(req) {
           }
 
           // تحديث كمية اللون
-          updateQuery[`colors.${colorIndex}.stock`] = 
-            product.colors[colorIndex].stock - quantity;
+          const newColorStock = product.colors[colorIndex].stock - quantity;
+          updateQuery[`colors.${colorIndex}.stock`] = newColorStock;
           
+          // تحديث الكمية الإجمالية للمنتج أيضاً
+          if (product.colors && product.colors.length > 0) {
+            const hasColorsWithStock = product.colors.some(c => typeof c.stock === 'number' && !isNaN(c.stock));
+            if (hasColorsWithStock) {
+              const updatedTotalStock = product.colors.reduce((sum, c, idx) => {
+                const s = idx === colorIndex ? newColorStock : (c.stock || 0);
+                return sum + Math.max(0, s);
+              }, 0);
+              updateQuery.stock = updatedTotalStock;
+            } else if (typeof product.stock === 'number') {
+              updateQuery.stock = Math.max(0, product.stock - quantity);
+            }
+          } else if (typeof product.stock === 'number') {
+            updateQuery.stock = Math.max(0, product.stock - quantity);
+          }
+
           stockUpdated = true;
-          console.log(`✅ سيتم خصم ${quantity} من اللون ${colorName}`);
+          console.log(`✅ سيتم خصم ${quantity} من اللون ${colorName} وتحديث الكمية الإجمالية للمنتج إلى: ${updateQuery.stock}`);
         } else {
           // خصم من الكمية الرئيسية
           console.log(`📦 الكمية الرئيسية الحالية: ${product.stock}`);
@@ -134,7 +150,7 @@ export async function POST(req) {
             continue;
           }
 
-          updateQuery.stock = product.stock - quantity;
+          updateQuery.stock = Math.max(0, product.stock - quantity);
           stockUpdated = true;
           console.log(`✅ سيتم خصم ${quantity} من الكمية الرئيسية`);
         }
