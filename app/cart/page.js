@@ -6,6 +6,14 @@ import Header from "../components/Header";
 import Link from "next/link";
 import { getOptimizedImageUrl, handleImageError } from "../lib/imageUrl";
 
+// مناطق التوصيل ورسوم الشحن المعتمدة
+const DELIVERY_AREAS = [
+  { id: "khanyounis", name: "خانيونس البلد والمشروع", fee: 15 },
+  { id: "mawasi", name: "المواصي", fee: 10 },
+  { id: "wusta", name: "الوسطى", fee: 20 },
+  { id: "gaza", name: "غزة", fee: 20 },
+];
+
 // دالة تحديث المخزون في الداتابيز
 const updateProductStock = async (cartItems) => {
   try {
@@ -118,7 +126,8 @@ const sendTelegramNotification = async (orderData) => {
 👤 *العميل:* ${orderData.customer.name}
 📞 *الجوال:* ${orderData.customer.phone}
 ${orderData.customer.whatsapp ? `📱 *الواتساب:* ${orderData.customer.whatsapp}` : ''}
-📍 *العنوان:* ${orderData.customer.address}
+🚚 *منطقة التوصيل:* ${orderData.deliveryArea || orderData.customer.city || 'غير محدد'} (رسوم التوصيل: ₪${orderData.deliveryFee ?? 0})
+📍 *العنوان بالتفصيل:* ${orderData.customer.address}
 ${orderData.customer.notes ? `📝 *ملاحظات:* ${orderData.customer.notes}` : ''}
 
 💳 *طريقة الدفع:* ${orderData.paymentMethod === 'cash' ? 'نقدي عند الاستلام' : 
@@ -146,7 +155,9 @@ ${Object.entries(
 ).map(([category, count]) => `• ${category}: ${count} منتج`).join('\n')}
 ` : ''}
 
-💰 *المجموع:* ₪${orderData.total.toFixed(2)}
+📦 *مجموع المنتجات:* ₪${(orderData.subtotal ?? (orderData.total - (orderData.deliveryFee || 0))).toFixed(2)}
+🚚 *رسوم التوصيل:* ₪${(orderData.deliveryFee ?? 0).toFixed(2)}
+💰 *الإجمالي النهائي:* ₪${orderData.total.toFixed(2)}
 ⏰ *الوقت:* ${new Date().toLocaleString('ar-EG')}
 
 📞 *اتصل الآن:* ${orderData.customer.phone}
@@ -206,9 +217,13 @@ export default function CartPage() {
   });
 
   const [paymentMethod, setPaymentMethod] = useState("cash");
+  const [selectedArea, setSelectedArea] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [productCategories, setProductCategories] = useState({});
+
+  const deliveryFee = selectedArea ? selectedArea.fee : 0;
+  const grandTotal = totalPrice + deliveryFee;
 
   // جلب التصنيفات عند تغيير الكارت
   useEffect(() => {
@@ -243,6 +258,11 @@ export default function CartPage() {
         return;
       }
 
+      if (!selectedArea) {
+        alert('يرجى اختيار منطقة التوصيل لإكمال الطلب');
+        return;
+      }
+
       if (cartItems.length === 0) {
         alert('السلة فارغة');
         return;
@@ -256,9 +276,15 @@ export default function CartPage() {
 
       // 3. إنشاء بيانات الطلب
       const orderData = {
-        customer: customerInfo,
+        customer: {
+          ...customerInfo,
+          city: selectedArea.name,
+        },
+        deliveryArea: selectedArea.name,
+        deliveryFee: selectedArea.fee,
+        subtotal: totalPrice,
         items: cartItemsWithCategories,
-        total: totalPrice,
+        total: grandTotal,
         paymentMethod: paymentMethod,
         orderDate: new Date().toISOString(),
         status: 'pending'
@@ -290,6 +316,7 @@ export default function CartPage() {
         address: '',
         notes: ''
       });
+      setSelectedArea(null);
       setPaymentMethod('cash');
 
     } catch (error) {
@@ -481,21 +508,110 @@ export default function CartPage() {
                   <div className="border-t pt-4 mt-4 sm:mt-6">
                     <div className="space-y-2">
                       <div className="flex justify-between text-gray-600 text-sm sm:text-base">
-                        <span>المجموع:</span>
+                        <span>مجموع المنتجات:</span>
                         <span>₪{totalPrice.toFixed(2)}</span>
                       </div>
-                      <div className="flex justify-between text-gray-600 text-sm sm:text-base">
+                      <div className="flex justify-between text-gray-600 text-sm sm:text-base items-center">
                         <span>الشحن:</span>
-                        <span>يتم التحديد عن التواصل</span>
+                        {selectedArea ? (
+                          <span className="font-semibold text-gray-800">
+                            ₪{selectedArea.fee.toFixed(2)}{" "}
+                            <span className="text-xs text-amber-600 font-normal">
+                              ({selectedArea.name})
+                            </span>
+                          </span>
+                        ) : (
+                          <span className="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                            اختر مدينتك لحساب الشحن
+                          </span>
+                        )}
                       </div>
                       <div className="flex justify-between text-base sm:text-lg font-bold text-gray-800 pt-2 border-t">
-                        <span className="text-yellow-600">الإجمالي:</span>
-                        <span className="text-green-600">
-                          ₪{totalPrice.toFixed(2)}
+                        <span className="text-yellow-600">الإجمالي النهائي:</span>
+                        <span className="text-green-600 text-lg sm:text-xl font-bold">
+                          ₪{grandTotal.toFixed(2)}
                         </span>
                       </div>
                     </div>
                   </div>
+                </div>
+
+                {/* 🚚 بطاقة اختيار مدينة ومنطقة التوصيل */}
+                <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 border border-amber-100">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">🚚</span>
+                      <h2 className="text-lg sm:text-xl font-bold text-amber-500">
+                        منطقة التوصيل
+                      </h2>
+                    </div>
+                    {selectedArea ? (
+                      <span className="text-xs bg-green-50 text-green-700 font-semibold px-2.5 py-1 rounded-full border border-green-200 flex items-center gap-1">
+                        <span>✓</span> تمت إضافة ₪{selectedArea.fee}
+                      </span>
+                    ) : (
+                      <span className="text-xs bg-amber-50 text-amber-600 font-medium px-2.5 py-1 rounded-full border border-amber-200">
+                        مطلوب للاستمرار
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs sm:text-sm text-gray-600 mb-4">
+                    اختر مدينتك أو منطقتك ليتم إضافة سعر التوصيل تلقائياً على الطلبية:
+                  </p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {DELIVERY_AREAS.map((area) => {
+                      const isSelected = selectedArea?.id === area.id;
+                      return (
+                        <button
+                          key={area.id}
+                          type="button"
+                          onClick={() => setSelectedArea(area)}
+                          className={`flex items-center justify-between p-3.5 rounded-xl border-2 transition-all text-right ${
+                            isSelected
+                              ? "border-amber-500 bg-amber-50 shadow-md ring-2 ring-amber-300"
+                              : "border-gray-200 hover:border-amber-300 hover:bg-gray-50 bg-white"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <div
+                              className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
+                                isSelected
+                                  ? "border-amber-500 bg-amber-500"
+                                  : "border-gray-300"
+                              }`}
+                            >
+                              {isSelected && (
+                                <div className="w-2 h-2 rounded-full bg-white"></div>
+                              )}
+                            </div>
+                            <span
+                              className={`text-sm font-bold ${
+                                isSelected ? "text-amber-900" : "text-gray-800"
+                              }`}
+                            >
+                              {area.name}
+                            </span>
+                          </div>
+                          <span
+                            className={`text-sm font-bold px-2.5 py-1 rounded-lg border ${
+                              isSelected
+                                ? "bg-amber-500 text-white border-amber-600"
+                                : "bg-gray-100 text-gray-700 border-gray-200"
+                            }`}
+                          >
+                            ₪{area.fee}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {!selectedArea && (
+                    <div className="mt-3 p-2.5 bg-amber-50 rounded-lg border border-amber-200 text-xs text-amber-700 text-center">
+                      ⚠️ يرجى اختيار منطقتك للمتابعة وإكمال الطلب
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -558,7 +674,39 @@ export default function CartPage() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        عنوان التوصيل *
+                        مدينة / منطقة التوصيل *
+                      </label>
+                      <select
+                        value={selectedArea ? selectedArea.id : ""}
+                        onChange={(e) => {
+                          const found = DELIVERY_AREAS.find((a) => a.id === e.target.value);
+                          setSelectedArea(found || null);
+                        }}
+                        required
+                        className={`w-full px-3 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all text-sm sm:text-base bg-white ${
+                          !selectedArea ? "border-amber-400 bg-amber-50/30" : "border-gray-300"
+                        }`}
+                        style={{ outline: "none" }}
+                      >
+                        <option value="" disabled>
+                          -- اضغط لاختيار منطقتك للتوصيل --
+                        </option>
+                        {DELIVERY_AREAS.map((area) => (
+                          <option key={area.id} value={area.id}>
+                            {area.name} (رسوم التوصيل: ₪{area.fee})
+                          </option>
+                        ))}
+                      </select>
+                      {selectedArea && (
+                        <p className="text-xs text-green-600 mt-1.5 font-medium flex items-center gap-1">
+                          <span>✓</span> تم اختيار {selectedArea.name} (+ ₪{selectedArea.fee} رسوم توصيل)
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        عنوان التوصيل بالتفصيل *
                       </label>
                       <textarea
                         name="address"
@@ -715,7 +863,7 @@ export default function CartPage() {
                           جاري تقديم الطلب...
                         </>
                       ) : (
-                        `تأكيد الطلب - ₪${totalPrice.toFixed(2)}`
+                        `تأكيد الطلب - ₪${grandTotal.toFixed(2)}`
                       )}
                     </button>
                   </form>
@@ -728,7 +876,7 @@ export default function CartPage() {
                       <p className="font-semibold mb-1">معلومات مهمة:</p>
                       <ul className="list-disc list-inside space-y-1">
                         <li>سيتم التواصل معك خلال دقائق</li>
-                        <li>يتم تحديد رسوم التوصيل عند مراسلتكم لتأكيد الطلب</li>
+                        <li>رسوم التوصيل محتسبة ومضافة تلقائياً حسب منطقتك</li>
                         <li>يمكنك تعديل الطلب قبل التأكيد النهائي</li>
                       </ul>
                     </div>
