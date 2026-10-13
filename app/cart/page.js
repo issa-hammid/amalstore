@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useCart } from "../context/CartContext";
 import Header from "../components/Header";
 import Link from "next/link";
+import { getOptimizedImageUrl, handleImageError } from "../lib/imageUrl";
 
 // دالة تحديث المخزون في الداتابيز
 const updateProductStock = async (cartItems) => {
@@ -384,8 +385,11 @@ export default function CartPage() {
                         className="flex gap-3 p-3 bg-gray-50 rounded-lg border border-yellow-600"
                       >
                         <img
-                          src={item.image}
+                          src={getOptimizedImageUrl(item.image, { thumbnail: true })}
                           alt={item.name}
+                          loading="lazy"
+                          referrerPolicy="no-referrer"
+                          onError={handleImageError}
                           className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg flex-shrink-0"
                         />
 

@@ -301,6 +301,7 @@
 "use client";
 import { useCart } from '../context/CartContext';
 import Link from 'next/link';
+import { getOptimizedImageUrl, handleImageError } from '../lib/imageUrl';
 
 export default function CartSidebar() {
   const { 
@@ -368,8 +369,11 @@ export default function CartSidebar() {
                 <div key={item.id} className="flex gap-3 p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
                   {/* Product Image */}
                   <img 
-                    src={item.image} 
+                    src={getOptimizedImageUrl(item.image, { thumbnail: true })} 
                     alt={item.name}
+                    loading="lazy"
+                    referrerPolicy="no-referrer"
+                    onError={handleImageError}
                     className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg flex-shrink-0"
                   />
                   

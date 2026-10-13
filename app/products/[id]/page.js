@@ -849,6 +849,7 @@ import Header from '../../components/Header';
 import { useCart } from '../../context/CartContext';
 import { notify } from "../../lib/notifications";
 import Link from 'next/link';
+import { getOptimizedImageUrl, handleImageError, PLACEHOLDER_IMAGE } from '../../lib/imageUrl';
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -1112,14 +1113,18 @@ export default function ProductDetailPage() {
                 <div className="bg-gray-100 rounded-xl overflow-hidden">
                   {selectedImage ? (
                     <img
-                      src={selectedImage}
+                      src={getOptimizedImageUrl(selectedImage, { width: 800, quality: 85 })}
                       alt={product.name}
+                      referrerPolicy="no-referrer"
+                      onError={handleImageError}
                       className="w-full h-80 lg:h-96 object-cover"
                     />
                   ) : (
-                    <div className="w-full h-80 lg:h-96 flex items-center justify-center text-gray-400">
-                      لا توجد صورة
-                    </div>
+                    <img
+                      src={PLACEHOLDER_IMAGE}
+                      alt={product.name}
+                      className="w-full h-80 lg:h-96 object-cover opacity-80"
+                    />
                   )}
                 </div>
 
@@ -1136,8 +1141,11 @@ export default function ProductDetailPage() {
                         }`}
                       >
                         <img
-                          src={image}
+                          src={getOptimizedImageUrl(image, { thumbnail: true })}
                           alt={`${product.name} ${index + 1}`}
+                          loading="lazy"
+                          referrerPolicy="no-referrer"
+                          onError={handleImageError}
                           className="w-full h-full object-cover"
                         />
                       </button>
@@ -1215,8 +1223,11 @@ export default function ProductDetailPage() {
                           }`}
                         >
                           <img
-                            src={product.image}
+                            src={getOptimizedImageUrl(product.image, { thumbnail: true })}
                             alt="أساسي"
+                            loading="lazy"
+                            referrerPolicy="no-referrer"
+                            onError={handleImageError}
                             className="w-8 h-8 rounded-full object-cover"
                           />
                           {/* <span className="text-sm">أساسي</span> */}
@@ -1236,8 +1247,11 @@ export default function ProductDetailPage() {
                         >
                           {color.image ? (
                             <img
-                              src={color.image}
+                              src={getOptimizedImageUrl(color.image, { thumbnail: true })}
                               alt={color.colorName}
+                              loading="lazy"
+                              referrerPolicy="no-referrer"
+                              onError={handleImageError}
                               className="w-8 h-8 rounded-full object-cover"
                             />
                           ) : (
@@ -1346,8 +1360,11 @@ export default function ProductDetailPage() {
                       <Link href={`/products/${relatedProduct._id}`}>
                         <div className="relative overflow-hidden">
                           <img
-                            src={relatedProduct.image || (relatedProduct.colors && relatedProduct.colors.find(c => c.image)?.image) || ""}
+                            src={getOptimizedImageUrl(relatedProduct.image || (relatedProduct.colors && relatedProduct.colors.find(c => c.image)?.image) || "", { width: 500, quality: 80 })}
                             alt={relatedProduct.name}
+                            loading="lazy"
+                            referrerPolicy="no-referrer"
+                            onError={handleImageError}
                             className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                           <div className="absolute top-2 left-2 bg-rose-500 text-white px-2 py-1 rounded text-xs">

@@ -147,6 +147,7 @@
 import Link from "next/link";
 import { useCart } from "../context/CartContext";
 import { notify } from "../lib/notifications";
+import { getOptimizedImageUrl, handleImageError, PLACEHOLDER_IMAGE } from "../lib/imageUrl";
 
 // ✅ البطاقة الأساسية
 export default function ProductCard({ product, onColorClick, loading = false }) {
@@ -206,14 +207,19 @@ export default function ProductCard({ product, onColorClick, loading = false }) 
         <Link href={`/products/${product._id}`}>
           {displayImage ? (
             <img
-              src={displayImage}
+              src={getOptimizedImageUrl(displayImage, { width: 500, quality: 80 })}
               alt={product.name}
+              loading="lazy"
+              referrerPolicy="no-referrer"
+              onError={handleImageError}
               className="w-full h-40 sm:h-48 object-cover group-hover:scale-105 transition-transform duration-300"
             />
           ) : (
-            <div className="w-full h-40 sm:h-48 bg-gray-100 flex items-center justify-center text-gray-400">
-              لا توجد صورة
-            </div>
+            <img
+              src={PLACEHOLDER_IMAGE}
+              alt={product.name}
+              className="w-full h-40 sm:h-48 object-cover opacity-80"
+            />
           )}
         </Link>
 
@@ -280,7 +286,14 @@ export default function ProductCard({ product, onColorClick, loading = false }) 
                 }`}
                 title="الصورة الأساسية"
               >
-                <img src={product.image} alt="أساسي" className="w-full h-full object-cover" />
+                <img
+                  src={getOptimizedImageUrl(product.image, { thumbnail: true })}
+                  alt="أساسي"
+                  loading="lazy"
+                  referrerPolicy="no-referrer"
+                  onError={handleImageError}
+                  className="w-full h-full object-cover"
+                />
               </button>
             )}
 
@@ -297,8 +310,11 @@ export default function ProductCard({ product, onColorClick, loading = false }) 
               >
                 {color.image ? (
                   <img
-                    src={color.image}
+                    src={getOptimizedImageUrl(color.image, { thumbnail: true })}
                     alt={color.colorName}
+                    loading="lazy"
+                    referrerPolicy="no-referrer"
+                    onError={handleImageError}
                     className="w-full h-full object-cover"
                   />
                 ) : (

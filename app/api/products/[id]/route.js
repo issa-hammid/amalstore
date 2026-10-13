@@ -344,6 +344,7 @@
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { uploadToImageKit, deleteFromImageKit } from "../../../lib/imagekit";
+import { connectMongoDB } from "@/app/DBconfig/mongoDB";
 
 const ProductSchema = new mongoose.Schema({
   name: String,
@@ -365,10 +366,7 @@ export async function GET(request, { params }) {
     const { id } = await params;
     console.log("🔍 بدء جلب المنتج بالـ ID:", id);
     
-    if (mongoose.connection.readyState !== 1) {
-      await mongoose.connect(process.env.MONGODB_URI);
-      console.log("✅ تم الاتصال بقاعدة البيانات");
-    }
+    await connectMongoDB();
 
     const product = await Product.findById(id)
       .populate('category', 'name _id');
@@ -416,9 +414,7 @@ export async function PUT(request, { params }) {
     const formData = await request.formData();
     console.log("📋 بيانات التعديل:", Array.from(formData.keys()));
 
-    if (mongoose.connection.readyState !== 1) {
-      await mongoose.connect(process.env.MONGODB_URI);
-    }
+    await connectMongoDB();
 
     const existingProduct = await Product.findById(id);
     if (!existingProduct) {
@@ -607,9 +603,7 @@ export async function DELETE(request, { params }) {
     const { id } = await params;
     console.log("🗑️ بدء حذف المنتج:", id);
 
-    if (mongoose.connection.readyState !== 1) {
-      await mongoose.connect(process.env.MONGODB_URI);
-    }
+    await connectMongoDB();
 
     const existingProduct = await Product.findById(id);
     if (!existingProduct) {

@@ -677,6 +677,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
 import { notify } from '../../lib/notifications';
+import { getOptimizedImageUrl, handleImageError } from '../../lib/imageUrl';
 import {
   Package,
   Search,
@@ -916,8 +917,11 @@ export default function ShowProductsPage() {
                       <div className="w-12 h-12 bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center">
                         {product.image || (product.colors && product.colors.find(c => c.image)?.image) ? (
                           <img 
-                            src={product.image || (product.colors && product.colors.find(c => c.image)?.image)} 
+                            src={getOptimizedImageUrl(product.image || (product.colors && product.colors.find(c => c.image)?.image), { thumbnail: true })} 
                             alt={product.name}
+                            loading="lazy"
+                            referrerPolicy="no-referrer"
+                            onError={handleImageError}
                             className="w-full h-full object-cover"
                           />
                         ) : (
@@ -1011,8 +1015,11 @@ export default function ShowProductsPage() {
                     <div className="w-16 h-16 bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center">
                       {product.image || (product.colors && product.colors.find(c => c.image)?.image) ? (
                         <img 
-                          src={product.image || (product.colors && product.colors.find(c => c.image)?.image)} 
+                          src={getOptimizedImageUrl(product.image || (product.colors && product.colors.find(c => c.image)?.image), { thumbnail: true })} 
                           alt={product.name}
+                          loading="lazy"
+                          referrerPolicy="no-referrer"
+                          onError={handleImageError}
                           className="w-full h-full object-cover"
                         />
                       ) : (

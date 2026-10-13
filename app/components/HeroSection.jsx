@@ -148,6 +148,7 @@ import { Autoplay, Pagination, Navigation } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
+import { getOptimizedImageUrl, handleImageError } from '../lib/imageUrl';
 
 export default function HeroSection() {
   const swiperRef = useRef(null);
@@ -229,8 +230,10 @@ console.log("test")
               <div className="relative w-full h-full">
                 {/* الصورة - محفوظة النسب */}
                 <img
-                  src={slide.image}
+                  src={getOptimizedImageUrl(slide.image, { width: 1400, quality: 85 })}
                   alt={slide.title}
+                  referrerPolicy="no-referrer"
+                  onError={handleImageError}
                   className="absolute inset-0 w-full h-full object-cover object-center rounded-2xl"
                 />
 

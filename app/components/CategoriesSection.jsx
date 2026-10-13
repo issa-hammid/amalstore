@@ -133,6 +133,7 @@
 "use client";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { getOptimizedImageUrl, handleImageError } from "../lib/imageUrl";
 
 export default function CategoriesSection() {
   const [categories, setCategories] = useState([]);
@@ -211,8 +212,11 @@ export default function CategoriesSection() {
                   {category.image ? (
                     // ✅ استخدم صورة الادمن إذا موجودة
                     <img
-                      src={category.image}
+                      src={getOptimizedImageUrl(category.image, { thumbnail: true })}
                       alt={category.name}
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                      onError={handleImageError}
                       className="w-full h-full object-cover"
                     />
                   ) : (
@@ -243,8 +247,11 @@ export default function CategoriesSection() {
                       {category.image ? (
                         // ✅ استخدم صورة الادمن إذا موجودة
                         <img
-                          src={category.image}
+                          src={getOptimizedImageUrl(category.image, { thumbnail: true })}
                           alt={category.name}
+                          loading="lazy"
+                          referrerPolicy="no-referrer"
+                          onError={handleImageError}
                           className="w-full h-full object-cover"
                         />
                       ) : (
