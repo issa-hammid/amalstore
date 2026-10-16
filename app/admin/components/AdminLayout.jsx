@@ -101,6 +101,7 @@ import {
   Layers,
   Store,
   LogOut,
+  Ticket,
 } from "lucide-react";
 
 export default function AdminLayout({ children }) {
@@ -176,6 +177,13 @@ export default function AdminLayout({ children }) {
               href="/admin/category"
               icon={<Layers className="w-5 h-5" />}
               text="التصنيفات"
+              pathname={pathname}
+              setSidebarOpen={setSidebarOpen}
+            />
+            <SidebarItem
+              href="/admin/coupons"
+              icon={<Ticket className="w-5 h-5" />}
+              text="كوبونات الخصم"
               pathname={pathname}
               setSidebarOpen={setSidebarOpen}
             />

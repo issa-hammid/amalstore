@@ -167,11 +167,11 @@ export default function CategoriesSection() {
           </h2>
 
           {/* Grid سكليتون لشاشات كبيرة */}
-          <div className="hidden lg:grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+          <div className="hidden lg:flex flex-wrap justify-center gap-6 lg:gap-8">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="text-center animate-pulse">
-                <div className="w-32 h-32 rounded-full bg-gray-200 mx-auto mb-4" />
-                <div className="h-4 bg-gray-200 rounded w-20 mx-auto" />
+              <div key={i} className="text-center animate-pulse w-28 lg:w-32">
+                <div className="w-24 h-24 lg:w-28 lg:h-28 rounded-full bg-gray-200 mx-auto mb-3" />
+                <div className="h-4 bg-gray-200 rounded w-16 mx-auto" />
               </div>
             ))}
           </div>
@@ -200,15 +200,15 @@ export default function CategoriesSection() {
         </h2>
 
         {/* للشاشات الكبيرة */}
-        <div className="hidden lg:grid grid-cols-2 md:grid-cols-3 lg:grid-cols-10 gap-6">
+        <div className="hidden lg:flex flex-wrap justify-center items-start gap-6 lg:gap-8 xl:gap-10">
           {categories.map((category) => (
             <Link
               key={category._id}
               href={`/categories/${category._id}`}
-              className="group text-center"
+              className="group text-center flex flex-col items-center w-28 lg:w-32"
             >
-              <div className="relative mb-4 mx-auto transition-all duration-300 group-hover:scale-105">
-                <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-gray-200 group-hover:border-yellow-400 transition-all duration-300 shadow-lg group-hover:shadow-xl mx-auto">
+              <div className="relative mb-3 mx-auto transition-all duration-300 group-hover:scale-105">
+                <div className="w-24 h-24 lg:w-28 lg:h-28 rounded-full overflow-hidden border-4 border-gray-200 group-hover:border-yellow-400 transition-all duration-300 shadow-md group-hover:shadow-xl mx-auto">
                   {category.image ? (
                     // ✅ استخدم صورة الادمن إذا موجودة
                     <img
@@ -229,7 +229,7 @@ export default function CategoriesSection() {
                   )}
                 </div>
               </div>
-              <h3 className="text-lg font-semibold text-rose-400 group-hover:text-pink-600 transition-colors">
+              <h3 className="text-sm lg:text-base font-semibold text-rose-400 group-hover:text-pink-600 transition-colors">
                 {category.name}
               </h3>
             </Link>

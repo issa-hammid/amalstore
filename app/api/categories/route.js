@@ -518,6 +518,10 @@ export async function POST(req) {
     const name = formData.get('name');
     const description = formData.get('description');
     const image = formData.get('image');
+    const tickerText = formData.get('tickerText') || '';
+    const tickerBgColor = formData.get('tickerBgColor') || '#d97706';
+    const tickerTextColor = formData.get('tickerTextColor') || '#ffffff';
+    const tickerEnabled = formData.get('tickerEnabled') === 'true';
 
     if (!name || name.trim() === "") {
       return NextResponse.json(
@@ -556,7 +560,11 @@ export async function POST(req) {
       name,
       description,
       image: imageUrl,
-      imagePublicId: imageFileId
+      imagePublicId: imageFileId,
+      tickerText,
+      tickerBgColor,
+      tickerTextColor,
+      tickerEnabled
     });
 
     return NextResponse.json(
@@ -630,6 +638,10 @@ export async function PUT(req) {
     const description = formData.get('description');
     const image = formData.get('image');
     const removeImage = formData.get('removeImage');
+    const tickerText = formData.get('tickerText');
+    const tickerBgColor = formData.get('tickerBgColor');
+    const tickerTextColor = formData.get('tickerTextColor');
+    const tickerEnabled = formData.get('tickerEnabled');
 
     if (!name || name.trim() === "") {
       return NextResponse.json(
@@ -682,16 +694,30 @@ export async function PUT(req) {
       }
     }
 
+    const isTickerEnabled =
+      tickerEnabled !== null && tickerEnabled !== undefined
+        ? tickerEnabled === "true" || tickerEnabled === true
+        : Boolean(existingCategory.tickerEnabled);
+
     const updateData = {
       name,
       description,
       image: imageUrl,
-      imagePublicId: imageFileId
+      imagePublicId: imageFileId,
+      tickerText:
+        tickerText !== null && tickerText !== undefined
+          ? String(tickerText).trim()
+          : existingCategory.tickerText || "",
+      tickerBgColor:
+        tickerBgColor || existingCategory.tickerBgColor || "#d97706",
+      tickerTextColor:
+        tickerTextColor || existingCategory.tickerTextColor || "#ffffff",
+      tickerEnabled: isTickerEnabled,
     };
 
     const updatedCategory = await Category.findByIdAndUpdate(
       id,
-      updateData,
+      { $set: updateData },
       { new: true }
     );
 

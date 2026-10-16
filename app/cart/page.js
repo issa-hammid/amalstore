@@ -156,7 +156,7 @@ ${Object.entries(
 ` : ''}
 
 📦 *مجموع المنتجات:* ₪${(orderData.subtotal ?? (orderData.total - (orderData.deliveryFee || 0))).toFixed(2)}
-🚚 *رسوم التوصيل:* ₪${(orderData.deliveryFee ?? 0).toFixed(2)}
+${orderData.coupon ? `🎟️ *كوبون الخصم (${orderData.coupon.code}):* -₪${Number(orderData.coupon.discountAmount).toFixed(2)}\n` : ''}🚚 *رسوم التوصيل:* ₪${(orderData.deliveryFee ?? 0).toFixed(2)}
 💰 *الإجمالي النهائي:* ₪${orderData.total.toFixed(2)}
 ⏰ *الوقت:* ${new Date().toLocaleString('ar-EG')}
 
@@ -222,8 +222,87 @@ export default function CartPage() {
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [productCategories, setProductCategories] = useState({});
 
+  // حالات كوبون الخصم
+  const [couponInput, setCouponInput] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponError, setCouponError] = useState("");
+  const [couponSuccess, setCouponSuccess] = useState("");
+  const [isCheckingCoupon, setIsCheckingCoupon] = useState(false);
+
   const deliveryFee = selectedArea ? selectedArea.fee : 0;
-  const grandTotal = totalPrice + deliveryFee;
+  const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
+  const subtotalAfterDiscount = Math.max(0, totalPrice - discountAmount);
+  const grandTotal = subtotalAfterDiscount + deliveryFee;
+
+  // إعادة فحص وتحديث خصم الكوبون عند تغيير مجموع السلة
+  useEffect(() => {
+    if (appliedCoupon && totalPrice > 0) {
+      if (appliedCoupon.minOrderAmount && totalPrice < appliedCoupon.minOrderAmount) {
+        setAppliedCoupon(null);
+        setCouponError(`تمت إزالة الكوبون لأن الحد الأدنى المطلوب هو ₪${appliedCoupon.minOrderAmount}`);
+        return;
+      }
+      let newDiscount = 0;
+      if (appliedCoupon.discountType === "percentage") {
+        newDiscount = (totalPrice * appliedCoupon.discountValue) / 100;
+        if (appliedCoupon.maxDiscount && newDiscount > appliedCoupon.maxDiscount) {
+          newDiscount = appliedCoupon.maxDiscount;
+        }
+      } else {
+        newDiscount = Math.min(appliedCoupon.discountValue, totalPrice);
+      }
+      newDiscount = Math.round(newDiscount * 100) / 100;
+      if (newDiscount !== appliedCoupon.discountAmount) {
+        setAppliedCoupon((prev) => ({ ...prev, discountAmount: newDiscount }));
+      }
+    } else if (cartItems.length === 0 && appliedCoupon) {
+      setAppliedCoupon(null);
+    }
+  }, [totalPrice, cartItems.length]);
+
+  const handleApplyCoupon = async (e) => {
+    if (e) e.preventDefault();
+    if (!couponInput.trim()) {
+      setCouponError("يرجى إدخال كود الكوبون");
+      return;
+    }
+    if (totalPrice <= 0) {
+      setCouponError("السلة فارغة");
+      return;
+    }
+    try {
+      setIsCheckingCoupon(true);
+      setCouponError("");
+      setCouponSuccess("");
+      const res = await fetch("/api/coupons/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: couponInput.trim(),
+          cartTotal: totalPrice,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setAppliedCoupon(data.coupon);
+        setCouponSuccess(`تم تطبيق الخصم: ₪${data.coupon.discountAmount.toFixed(2)} 🎉`);
+        setCouponInput("");
+      } else {
+        setCouponError(data.error || "كود الكوبون غير صحيح");
+      }
+    } catch (err) {
+      console.error(err);
+      setCouponError("حدث خطأ أثناء التحقق من الكوبون");
+    } finally {
+      setIsCheckingCoupon(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponError("");
+    setCouponSuccess("");
+  };
 
   // جلب التصنيفات عند تغيير الكارت
   useEffect(() => {
@@ -283,6 +362,15 @@ export default function CartPage() {
         deliveryArea: selectedArea.name,
         deliveryFee: selectedArea.fee,
         subtotal: totalPrice,
+        discountAmount: discountAmount,
+        coupon: appliedCoupon
+          ? {
+              code: appliedCoupon.code,
+              discountType: appliedCoupon.discountType,
+              discountValue: appliedCoupon.discountValue,
+              discountAmount: appliedCoupon.discountAmount,
+            }
+          : null,
         items: cartItemsWithCategories,
         total: grandTotal,
         paymentMethod: paymentMethod,
@@ -292,6 +380,19 @@ export default function CartPage() {
 
       // 4. تحديث المخزون في الداتابيز
       await updateProductStock(cartItems);
+
+      // زيادة عداد استخدام الكوبون إذا كان مستخدماً
+      if (appliedCoupon && appliedCoupon.code) {
+        try {
+          await fetch('/api/coupons/apply', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code: appliedCoupon.code })
+          });
+        } catch (couponErr) {
+          console.error("Error updating coupon usage:", couponErr);
+        }
+      }
 
       // 5. إرسال إشعار التيليجرام
       await sendTelegramNotification(orderData);
@@ -317,6 +418,10 @@ export default function CartPage() {
         notes: ''
       });
       setSelectedArea(null);
+      setAppliedCoupon(null);
+      setCouponInput("");
+      setCouponError("");
+      setCouponSuccess("");
       setPaymentMethod('cash');
 
     } catch (error) {
@@ -504,13 +609,90 @@ export default function CartPage() {
                     ))}
                   </div>
 
-                  {/* Order Summary */}
+                  {/* قسم كوبون الخصم */}
                   <div className="border-t pt-4 mt-4 sm:mt-6">
+                    <label className="block text-xs font-semibold text-gray-700 mb-2">
+                      هل لديك كود خصم؟ 🎟️
+                    </label>
+
+                    {appliedCoupon ? (
+                      <div className="flex items-center justify-between p-3 bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-200 rounded-xl">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono font-bold text-emerald-700 bg-white px-2.5 py-1 rounded-md border border-emerald-300 text-sm shadow-xs">
+                            {appliedCoupon.code}
+                          </span>
+                          <div className="text-xs text-emerald-800">
+                            <span className="font-bold">خصم ₪{appliedCoupon.discountAmount.toFixed(2)}</span>
+                            {appliedCoupon.discountType === "percentage" && (
+                              <span className="text-emerald-600 font-normal mr-1">({appliedCoupon.discountValue}%)</span>
+                            )}
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleRemoveCoupon}
+                          className="text-xs text-red-600 hover:text-red-700 hover:bg-red-50 px-2.5 py-1 rounded-lg border border-red-200 font-medium transition"
+                        >
+                          إلغاء ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-1.5">
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={couponInput}
+                            onChange={(e) => {
+                              setCouponInput(e.target.value.toUpperCase());
+                              if (couponError) setCouponError("");
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                handleApplyCoupon();
+                              }
+                            }}
+                            placeholder="أدخل كود الخصم (مثال: AMAL10)"
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono uppercase focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none"
+                          />
+                          <button
+                            type="button"
+                            onClick={handleApplyCoupon}
+                            disabled={isCheckingCoupon || !couponInput.trim()}
+                            className="px-4 py-2 bg-gray-800 text-white rounded-lg text-xs font-semibold hover:bg-black transition disabled:opacity-50"
+                          >
+                            {isCheckingCoupon ? "فحص..." : "تطبيق"}
+                          </button>
+                        </div>
+                        {couponError && (
+                          <p className="text-xs text-red-600 font-medium pt-0.5">
+                            ⚠️ {couponError}
+                          </p>
+                        )}
+                        {couponSuccess && (
+                          <p className="text-xs text-emerald-600 font-medium pt-0.5">
+                            ✅ {couponSuccess}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Order Summary */}
+                  <div className="border-t pt-4 mt-4">
                     <div className="space-y-2">
                       <div className="flex justify-between text-gray-600 text-sm sm:text-base">
                         <span>مجموع المنتجات:</span>
                         <span>₪{totalPrice.toFixed(2)}</span>
                       </div>
+
+                      {appliedCoupon && (
+                        <div className="flex justify-between text-emerald-600 text-sm sm:text-base font-semibold">
+                          <span>خصم الكوبون ({appliedCoupon.code}):</span>
+                          <span>-₪{discountAmount.toFixed(2)}</span>
+                        </div>
+                      )}
+
                       <div className="flex justify-between text-gray-600 text-sm sm:text-base items-center">
                         <span>الشحن:</span>
                         {selectedArea ? (

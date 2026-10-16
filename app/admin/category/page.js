@@ -559,12 +559,17 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import CategoryTicker from '@/app/components/CategoryTicker';
 
 export default function AdminCategoriesPage() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    image: null
+    image: null,
+    tickerText: '',
+    tickerBgColor: '#d97706',
+    tickerTextColor: '#ffffff',
+    tickerEnabled: false,
   });
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -614,10 +619,10 @@ export default function AdminCategoriesPage() {
   }, [isAuthenticated]); // فقط isAuthenticated في dependencies
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: type === 'checkbox' ? checked : value
     }));
   };
 
@@ -659,6 +664,10 @@ export default function AdminCategoriesPage() {
       const formDataToSend = new FormData();
       formDataToSend.append('name', formData.name);
       formDataToSend.append('description', formData.description || '');
+      formDataToSend.append('tickerText', formData.tickerText || '');
+      formDataToSend.append('tickerBgColor', formData.tickerBgColor || '#d97706');
+      formDataToSend.append('tickerTextColor', formData.tickerTextColor || '#ffffff');
+      formDataToSend.append('tickerEnabled', formData.tickerEnabled ? 'true' : 'false');
       if (formData.image) {
         formDataToSend.append('image', formData.image);
       }
@@ -677,7 +686,11 @@ export default function AdminCategoriesPage() {
         setFormData({
           name: '',
           description: '',
-          image: null
+          image: null,
+          tickerText: '',
+          tickerBgColor: '#d97706',
+          tickerTextColor: '#ffffff',
+          tickerEnabled: false,
         });
         setImagePreview(null);
         
@@ -704,9 +717,16 @@ export default function AdminCategoriesPage() {
     setFormData({
       name: category.name,
       description: category.description || '',
-      image: null
+      image: null,
+      tickerText: category.tickerText || '',
+      tickerBgColor: category.tickerBgColor || '#d97706',
+      tickerTextColor: category.tickerTextColor || '#ffffff',
+      tickerEnabled: category.tickerEnabled === true || category.tickerEnabled === 'true',
     });
     setImagePreview(category.image || null);
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   const saveEdit = async () => {
@@ -721,6 +741,10 @@ export default function AdminCategoriesPage() {
       formDataToSend.append('id', editingId);
       formDataToSend.append('name', formData.name);
       formDataToSend.append('description', formData.description || '');
+      formDataToSend.append('tickerText', formData.tickerText || '');
+      formDataToSend.append('tickerBgColor', formData.tickerBgColor || '#d97706');
+      formDataToSend.append('tickerTextColor', formData.tickerTextColor || '#ffffff');
+      formDataToSend.append('tickerEnabled', formData.tickerEnabled ? 'true' : 'false');
       
       if (formData.image) {
         formDataToSend.append('image', formData.image);
@@ -743,7 +767,11 @@ export default function AdminCategoriesPage() {
         setFormData({
           name: '',
           description: '',
-          image: null
+          image: null,
+          tickerText: '',
+          tickerBgColor: '#d97706',
+          tickerTextColor: '#ffffff',
+          tickerEnabled: false,
         });
         setImagePreview(null);
         
@@ -769,7 +797,11 @@ export default function AdminCategoriesPage() {
     setFormData({
       name: '',
       description: '',
-      image: null
+      image: null,
+      tickerText: '',
+      tickerBgColor: '#d97706',
+      tickerTextColor: '#ffffff',
+      tickerEnabled: false,
     });
     setImagePreview(null);
     const imageInput = document.getElementById('imageInput');
@@ -845,7 +877,17 @@ export default function AdminCategoriesPage() {
             {editingId ? "تعديل التصنيف" : "إضافة تصنيف جديد"}
           </h2>
           
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (editingId) {
+                saveEdit();
+              } else {
+                handleSubmit(e);
+              }
+            }}
+            className="space-y-4"
+          >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -905,6 +947,206 @@ export default function AdminCategoriesPage() {
                     >
                       ✕
                     </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* إعدادات الشريط المتحرك (الماركي) */}
+            <div className="bg-amber-50/70 border border-amber-200 rounded-2xl p-5 space-y-4 shadow-xs">
+              <div className="flex items-center justify-between pb-3 border-b border-amber-200/80">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-2xl">📢</span>
+                  <div>
+                    <h3 className="font-bold text-gray-800 text-sm md:text-base flex items-center gap-2">
+                      الشريط الإعلاني المتحرك فوق التصنيف
+                    </h3>
+                    <p className="text-xs text-gray-500">
+                      شريط متحرك (Marquee) يظهر أعلى قسم هذا التصنيف في الصفحة الرئيسية وصفحة التصنيف
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={formData.tickerEnabled}
+                    dir="ltr"
+                    onClick={() =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        tickerEnabled: !prev.tickerEnabled,
+                      }))
+                    }
+                    className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full p-0.5 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-amber-500/40 ${
+                      formData.tickerEnabled ? "bg-amber-500 shadow-sm" : "bg-gray-300"
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                        formData.tickerEnabled ? "translate-x-5" : "translate-x-0"
+                      }`}
+                    />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        tickerEnabled: !prev.tickerEnabled,
+                      }))
+                    }
+                    className={`text-xs font-bold cursor-pointer select-none px-2.5 py-1 rounded-lg transition ${
+                      formData.tickerEnabled
+                        ? "text-amber-800 bg-amber-100"
+                        : "text-gray-500 bg-gray-200/80"
+                    }`}
+                  >
+                    {formData.tickerEnabled ? "مفعّل ✅" : "معطّل"}
+                  </button>
+                </div>
+              </div>
+
+              {formData.tickerEnabled && (
+                <div className="space-y-4 pt-1">
+                  {/* نص الشريط */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                      نص الشريط المتحرك *
+                    </label>
+                    <input
+                      type="text"
+                      name="tickerText"
+                      value={formData.tickerText}
+                      onChange={handleInputChange}
+                      placeholder="مثال: — كوب مسلسل فريندز بكمية محدودة! —"
+                      className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white text-sm"
+                    />
+                    <p className="text-[11px] text-gray-500 mt-1">
+                      اكتب النص الذي تريده، وسيتم تكراره وتحريكه بشكل انسيابي لا نهائي
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* لون الخلفية */}
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                        لون خلفية الشريط
+                      </label>
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 border border-gray-300 rounded-xl p-1.5 bg-white flex-1">
+                          <input
+                            type="color"
+                            name="tickerBgColor"
+                            value={formData.tickerBgColor}
+                            onChange={handleInputChange}
+                            className="w-9 h-9 rounded-lg border-0 cursor-pointer p-0 bg-transparent"
+                          />
+                          <span className="font-mono text-xs text-gray-700 font-bold uppercase">
+                            {formData.tickerBgColor}
+                          </span>
+                        </div>
+
+                        {/* ألوان سريعة جاهزة */}
+                        <div className="flex items-center gap-1.5">
+                          {[
+                            { name: "خردلي", color: "#d97706" },
+                            { name: "وردي/أحمر", color: "#e11d48" },
+                            { name: "زمردي", color: "#059669" },
+                            { name: "بنفسجي", color: "#7c3aed" },
+                            { name: "أسود", color: "#18181b" },
+                          ].map((c) => (
+                            <button
+                              key={c.color}
+                              type="button"
+                              title={c.name}
+                              onClick={() =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  tickerBgColor: c.color,
+                                }))
+                              }
+                              className={`w-7 h-7 rounded-full border-2 transition hover:scale-110 ${
+                                formData.tickerBgColor === c.color
+                                  ? "border-black ring-2 ring-offset-1 ring-amber-400"
+                                  : "border-white shadow-sm"
+                              }`}
+                              style={{ backgroundColor: c.color }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* لون النص */}
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                        لون النص
+                      </label>
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 border border-gray-300 rounded-xl p-1.5 bg-white flex-1">
+                          <input
+                            type="color"
+                            name="tickerTextColor"
+                            value={formData.tickerTextColor}
+                            onChange={handleInputChange}
+                            className="w-9 h-9 rounded-lg border-0 cursor-pointer p-0 bg-transparent"
+                          />
+                          <span className="font-mono text-xs text-gray-700 font-bold uppercase">
+                            {formData.tickerTextColor}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                tickerTextColor: "#ffffff",
+                              }))
+                            }
+                            className={`px-3 py-2 rounded-xl text-xs font-semibold border transition ${
+                              formData.tickerTextColor === "#ffffff"
+                                ? "bg-gray-800 text-white border-gray-800 shadow-xs"
+                                : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+                            }`}
+                          >
+                            أبيض
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                tickerTextColor: "#18181b",
+                              }))
+                            }
+                            className={`px-3 py-2 rounded-xl text-xs font-semibold border transition ${
+                              formData.tickerTextColor === "#18181b"
+                                ? "bg-gray-800 text-white border-gray-800 shadow-xs"
+                                : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+                            }`}
+                          >
+                            داكن
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* معاينة حية فورية للشريط المتحرك */}
+                  <div className="pt-2">
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center gap-1.5">
+                      <span>معاينة حية وتفاعلية للشريط:</span>
+                      <span className="text-[11px] text-gray-400 font-normal">(يتحرك تلقائياً ويتوقف عند تمرير الماوس)</span>
+                    </label>
+                    <div className="rounded-xl overflow-hidden border border-gray-200 shadow-sm">
+                      <CategoryTicker
+                        text={formData.tickerText || "— اكتب نص الشريط هنا للمعاينة... —"}
+                        bgColor={formData.tickerBgColor}
+                        textColor={formData.tickerTextColor}
+                      />
+                    </div>
                   </div>
                 </div>
               )}
@@ -975,6 +1217,18 @@ export default function AdminCategoriesPage() {
                     <h3 className="font-semibold text-gray-800 mb-1">{category.name}</h3>
                     {category.description && (
                       <p className="text-sm text-gray-600 mb-3">{category.description}</p>
+                    )}
+                    {category.tickerEnabled && category.tickerText && (
+                      <div
+                        className="mb-3 px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-xs overflow-hidden"
+                        style={{
+                          backgroundColor: category.tickerBgColor || "#d97706",
+                          color: category.tickerTextColor || "#ffffff",
+                        }}
+                      >
+                        <span className="shrink-0 text-xs">📢</span>
+                        <span className="truncate">{category.tickerText}</span>
+                      </div>
                     )}
                     <div className="flex justify-between items-center">
                       <span className="text-xs text-gray-500">

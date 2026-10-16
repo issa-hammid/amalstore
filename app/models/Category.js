@@ -35,10 +35,33 @@ const CategorySchema = new Schema(
     description: {
       type: String,
       trim: true,
-    }
+    },
+    // الشريط الإعلاني المتحرك للتصنيف
+    tickerText: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    tickerBgColor: {
+      type: String,
+      default: "#d97706", // لون خردلي / ذهبي افتراضي مثل الصورة
+    },
+    tickerTextColor: {
+      type: String,
+      default: "#ffffff",
+    },
+    tickerEnabled: {
+      type: Boolean,
+      default: false,
+    },
   },
-  { timestamps: true }
+  { timestamps: true, strict: false }
 );
 
-const Category = models.Category || mongoose.model("Category", CategorySchema);
+// حذف النموذج المخزن مؤقتاً لضمان تحديث الحقول فورياً في بيئة التطوير
+if (mongoose.models && mongoose.models.Category) {
+  delete mongoose.models.Category;
+}
+
+const Category = mongoose.models.Category || mongoose.model("Category", CategorySchema);
 export default Category;

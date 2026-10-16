@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Header from '../../components/Header';
 import ProductCard from '../../components/ProductCard';
+import CategoryTicker from '../../components/CategoryTicker';
 
 export default function CategoryPage() {
   const params = useParams();
@@ -134,6 +135,15 @@ export default function CategoryPage() {
     <div className="min-h-screen bg-gray-50">
       <Header />
       
+      {/* شريط متحرك فوق التصنيف إذا تم تفعيله من قبل الأدمن */}
+      {category.tickerEnabled && category.tickerText && (
+        <CategoryTicker
+          text={category.tickerText}
+          bgColor={category.tickerBgColor}
+          textColor={category.tickerTextColor}
+        />
+      )}
+
       {/* عنوان التصنيف */}
       <section className="bg-white py-8 border-b border-gray-200">
         <div className="container mx-auto px-4">

@@ -1340,6 +1340,7 @@ import 'swiper/css/pagination';
 import Link from 'next/link';
 import ProductCard from "./components/ProductCard";
 import WhyChooseUs from "./components/WhyChooseUs ";
+import CategoryTicker from "./components/CategoryTicker";
 export default function Home() {
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -1505,7 +1506,16 @@ export default function Home() {
         if (categoryProductsList.length === 0) return null;
         
         return (
-          <section key={category._id} className="py-12 bg-gray-50 border-t border-gray-200">
+          <div key={category._id} className="relative">
+            {/* شريط متحرك فوق التصنيف إذا تم تفعيله من قبل الأدمن */}
+            {category.tickerEnabled && category.tickerText && (
+              <CategoryTicker
+                text={category.tickerText}
+                bgColor={category.tickerBgColor}
+                textColor={category.tickerTextColor}
+              />
+            )}
+            <section className="py-12 bg-gray-50 border-t border-gray-200">
             <div className="container mx-auto px-4">
               {/* العنوان في المنتصف */}
               <div className="text-center mb-8">
@@ -1539,8 +1549,9 @@ export default function Home() {
               </div>
             </div>
           </section>
-        );
-      })}
+        </div>
+      );
+    })}
                 <WhyChooseUs />
 
     </div>
@@ -1582,8 +1593,8 @@ function ProductsSwiper({ products, onColorClick }) {
             spaceBetween: 24
           },
           1536: {
-            slidesPerView: 4.5,
-            spaceBetween: 24
+            slidesPerView: 4,
+            spaceBetween: 28
           }
         }}
         autoplay={{
@@ -1614,13 +1625,13 @@ function ProductsSwiper({ products, onColorClick }) {
       </Swiper>
       
       {/* أزرار التنقل المخصصة */}
-      <div className="swiper-button-prev-custom absolute top-1/2 -translate-y-1/2 right-4 z-10 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white hover:shadow-xl transition-all duration-300 flex items-center justify-center cursor-pointer">
+      <div className="swiper-button-prev-custom absolute top-1/2 -translate-y-1/2 -right-2 md:-right-4 z-10 w-11 h-11 bg-white/95 backdrop-blur-sm rounded-full shadow-lg hover:bg-white hover:shadow-xl transition-all duration-300 flex items-center justify-center cursor-pointer border border-gray-100">
         <svg className="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
         </svg>
       </div>
       
-      <div className="swiper-button-next-custom absolute top-1/2 -translate-y-1/2 left-4 z-10 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white hover:shadow-xl transition-all duration-300 flex items-center justify-center cursor-pointer">
+      <div className="swiper-button-next-custom absolute top-1/2 -translate-y-1/2 -left-2 md:-left-4 z-10 w-11 h-11 bg-white/95 backdrop-blur-sm rounded-full shadow-lg hover:bg-white hover:shadow-xl transition-all duration-300 flex items-center justify-center cursor-pointer border border-gray-100">
         <svg className="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
