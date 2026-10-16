@@ -619,11 +619,6 @@ export default function AdminCouponsPage() {
           </div>
         ) : (
           <div className="overflow-x-auto w-full max-w-full touch-pan-x">
-            {/* مؤشر توجيهي على الموبايل لتسهيل التمرير الأفقي */}
-            <div className="md:hidden px-4 py-2 bg-rose-50/80 border-b border-rose-100 text-rose-700 text-xs flex items-center justify-between font-medium">
-              <span>💡 يمكنك سحب الجدول يميناً ويساراً لمشاهدة باقي الأعمدة والإجراءات</span>
-              <span className="font-bold text-sm select-none">⟷</span>
-            </div>
             <table className="w-full min-w-[700px] text-right text-sm">
               <thead className="bg-gray-50 text-gray-600 text-xs font-semibold border-b border-gray-100">
                 <tr>
