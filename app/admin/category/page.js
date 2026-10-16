@@ -867,15 +867,14 @@ export default function AdminCategoriesPage() {
   }
 
   return (
-    <div dir="rtl" className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6 text-gray-800">إدارة التصنيفات</h1>
+    <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
+      <h1 className="text-xl sm:text-2xl font-bold text-gray-800">إدارة التصنيفات</h1>
 
-        {/* نموذج إضافة/تعديل تصنيف */}
-        <div className="bg-white shadow-md rounded-2xl p-6 mb-6">
-          <h2 className="text-lg font-semibold mb-4 text-gray-700">
-            {editingId ? "تعديل التصنيف" : "إضافة تصنيف جديد"}
-          </h2>
+      {/* نموذج إضافة/تعديل تصنيف */}
+      <div className="bg-white shadow-md rounded-2xl p-4 sm:p-6">
+        <h2 className="text-base sm:text-lg font-semibold mb-4 text-gray-700">
+          {editingId ? "تعديل التصنيف" : "إضافة تصنيف جديد"}
+        </h2>
           
           <form
             onSubmit={(e) => {
@@ -953,8 +952,8 @@ export default function AdminCategoriesPage() {
             </div>
 
             {/* إعدادات الشريط المتحرك (الماركي) */}
-            <div className="bg-amber-50/70 border border-amber-200 rounded-2xl p-5 space-y-4 shadow-xs">
-              <div className="flex items-center justify-between pb-3 border-b border-amber-200/80">
+            <div className="bg-amber-50/70 border border-amber-200 rounded-2xl p-3.5 sm:p-5 space-y-4 shadow-xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-amber-200/80">
                 <div className="flex items-center gap-2.5">
                   <span className="text-2xl">📢</span>
                   <div>
@@ -966,7 +965,7 @@ export default function AdminCategoriesPage() {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 shrink-0">
                   <button
                     type="button"
                     role="switch"
@@ -1033,14 +1032,14 @@ export default function AdminCategoriesPage() {
                       <label className="block text-xs font-semibold text-gray-700 mb-1.5">
                         لون خلفية الشريط
                       </label>
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-2 border border-gray-300 rounded-xl p-1.5 bg-white flex-1">
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                        <div className="flex items-center gap-2 border border-gray-300 rounded-xl p-1.5 bg-white flex-1 min-w-[130px]">
                           <input
                             type="color"
                             name="tickerBgColor"
                             value={formData.tickerBgColor}
                             onChange={handleInputChange}
-                            className="w-9 h-9 rounded-lg border-0 cursor-pointer p-0 bg-transparent"
+                            className="w-8 h-8 rounded-lg border-0 cursor-pointer p-0 bg-transparent"
                           />
                           <span className="font-mono text-xs text-gray-700 font-bold uppercase">
                             {formData.tickerBgColor}
@@ -1048,7 +1047,7 @@ export default function AdminCategoriesPage() {
                         </div>
 
                         {/* ألوان سريعة جاهزة */}
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 flex-wrap">
                           {[
                             { name: "خردلي", color: "#d97706" },
                             { name: "وردي/أحمر", color: "#e11d48" },
@@ -1083,14 +1082,14 @@ export default function AdminCategoriesPage() {
                       <label className="block text-xs font-semibold text-gray-700 mb-1.5">
                         لون النص
                       </label>
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-2 border border-gray-300 rounded-xl p-1.5 bg-white flex-1">
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                        <div className="flex items-center gap-2 border border-gray-300 rounded-xl p-1.5 bg-white flex-1 min-w-[130px]">
                           <input
                             type="color"
                             name="tickerTextColor"
                             value={formData.tickerTextColor}
                             onChange={handleInputChange}
-                            className="w-9 h-9 rounded-lg border-0 cursor-pointer p-0 bg-transparent"
+                            className="w-8 h-8 rounded-lg border-0 cursor-pointer p-0 bg-transparent"
                           />
                           <span className="font-mono text-xs text-gray-700 font-bold uppercase">
                             {formData.tickerTextColor}
@@ -1138,9 +1137,9 @@ export default function AdminCategoriesPage() {
                   <div className="pt-2">
                     <label className="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center gap-1.5">
                       <span>معاينة حية وتفاعلية للشريط:</span>
-                      <span className="text-[11px] text-gray-400 font-normal">(يتحرك تلقائياً ويتوقف عند تمرير الماوس)</span>
+                      <span className="text-[11px] text-gray-400 font-normal">(يتحرك تلقائياً وبشكل انسيابي مستمر)</span>
                     </label>
-                    <div className="rounded-xl overflow-hidden border border-gray-200 shadow-sm">
+                    <div className="rounded-xl overflow-hidden border border-gray-200 shadow-xs w-full max-w-full">
                       <CategoryTicker
                         text={formData.tickerText || "— اكتب نص الشريط هنا للمعاينة... —"}
                         bgColor={formData.tickerBgColor}
@@ -1152,14 +1151,14 @@ export default function AdminCategoriesPage() {
               )}
             </div>
 
-            <div className="flex space-x-3">
+            <div className="flex flex-wrap sm:flex-nowrap gap-3 pt-2">
               {editingId ? (
                 <>
                   <button
                     type="button"
                     onClick={saveEdit}
                     disabled={loading}
-                    className="px-6 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 transition disabled:bg-green-300"
+                    className="flex-1 sm:flex-none px-6 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 transition disabled:bg-green-300 font-semibold text-sm shadow-sm"
                   >
                     {loading ? "جاري الحفظ..." : "حفظ التعديلات"}
                   </button>
@@ -1167,7 +1166,7 @@ export default function AdminCategoriesPage() {
                     type="button"
                     onClick={cancelEdit}
                     disabled={loading}
-                    className="px-6 py-3 bg-gray-500 text-white rounded-xl hover:bg-gray-600 transition disabled:bg-gray-300"
+                    className="flex-1 sm:flex-none px-6 py-3 bg-gray-500 text-white rounded-xl hover:bg-gray-600 transition disabled:bg-gray-300 font-medium text-sm"
                   >
                     إلغاء
                   </button>
@@ -1176,7 +1175,7 @@ export default function AdminCategoriesPage() {
                 <button
                   type="submit"
                   disabled={loading || !formData.name.trim()}
-                  className="px-6 py-3 bg-rose-500 text-white rounded-xl hover:bg-rose-600 transition disabled:bg-rose-300"
+                  className="w-full sm:w-auto px-6 py-3 bg-rose-500 text-white rounded-xl hover:bg-rose-600 transition disabled:bg-rose-300 font-semibold text-sm shadow-sm"
                 >
                   {loading ? "جاري الإضافة..." : "إضافة التصنيف"}
                 </button>
@@ -1186,18 +1185,18 @@ export default function AdminCategoriesPage() {
         </div>
 
         {/* عرض التصنيفات الحالية */}
-        <div className="bg-white shadow-md rounded-2xl p-6">
-          <h2 className="text-lg font-semibold mb-4 text-gray-700">
+        <div className="bg-white shadow-md rounded-2xl p-4 sm:p-6">
+          <h2 className="text-base sm:text-lg font-semibold mb-4 text-gray-700">
             التصنيفات الحالية ({categories.length})
           </h2>
           
           {categories.length === 0 ? (
             <p className="text-center text-gray-500 py-8">لا توجد تصنيفات مضافة بعد</p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {categories.map((category) => (
-                <div key={category._id} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition">
-                  <div className="relative h-48 bg-gray-100">
+                <div key={category._id} className="border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition">
+                  <div className="relative h-44 sm:h-48 bg-gray-100">
                     {category.image ? (
                       <img
                         src={category.image}
@@ -1206,17 +1205,17 @@ export default function AdminCategoriesPage() {
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-rose-50 to-pink-100">
-                        <span className="text-gray-400 text-lg">لا توجد صورة</span>
+                        <span className="text-gray-400 text-sm">لا توجد صورة</span>
                       </div>
                     )}
-                    <div className="absolute top-2 left-2 bg-rose-500 text-white px-2 py-1 rounded text-xs">
+                    <div className="absolute top-2 left-2 bg-rose-500 text-white px-2 py-0.5 rounded-lg text-xs font-medium shadow-xs">
                       {category.productCount || 0} منتج
                     </div>
                   </div>
                   <div className="p-4">
                     <h3 className="font-semibold text-gray-800 mb-1">{category.name}</h3>
                     {category.description && (
-                      <p className="text-sm text-gray-600 mb-3">{category.description}</p>
+                      <p className="text-xs sm:text-sm text-gray-600 mb-3 line-clamp-2">{category.description}</p>
                     )}
                     {category.tickerEnabled && category.tickerText && (
                       <div
@@ -1230,20 +1229,20 @@ export default function AdminCategoriesPage() {
                         <span className="truncate">{category.tickerText}</span>
                       </div>
                     )}
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs text-gray-500">
+                    <div className="flex justify-between items-center pt-1 border-t border-gray-100">
+                      <span className="text-[11px] text-gray-400">
                         {new Date(category.createdAt).toLocaleDateString('ar-SA')}
                       </span>
                       <div className="flex space-x-2">
                         <button
                           onClick={() => startEdit(category)}
-                          className="text-blue-600 hover:text-blue-800 text-sm px-2 py-1 rounded hover:bg-blue-50"
+                          className="text-blue-600 hover:text-blue-800 text-xs sm:text-sm font-medium px-2 py-1 rounded-lg hover:bg-blue-50 transition"
                         >
                           تعديل
                         </button>
                         <button
                           onClick={() => deleteCategory(category._id, category.name)}
-                          className="text-red-600 hover:text-red-800 text-sm px-2 py-1 rounded hover:bg-red-50"
+                          className="text-red-600 hover:text-red-800 text-xs sm:text-sm font-medium px-2 py-1 rounded-lg hover:bg-red-50 transition"
                         >
                           حذف
                         </button>
@@ -1258,7 +1257,7 @@ export default function AdminCategoriesPage() {
 
         {/* رسائل النظام */}
         {message && (
-          <div className={`mt-4 p-3 rounded-lg text-center ${
+          <div className={`p-3 rounded-xl text-center ${
             message.type === "success" 
               ? "bg-green-50 text-green-600 border border-green-200" 
               : "bg-red-50 text-red-600 border border-red-200"
@@ -1267,6 +1266,5 @@ export default function AdminCategoriesPage() {
           </div>
         )}
       </div>
-    </div>
   );
 }

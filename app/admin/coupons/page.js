@@ -348,22 +348,22 @@ export default function AdminCouponsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* رأس الصفحة وأزرار التحكم */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-gray-100">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-            <Ticket className="w-7 h-7 text-rose-500" />
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800 flex items-center gap-2">
+            <Ticket className="w-6 h-6 sm:w-7 sm:h-7 text-rose-500" />
             إدارة كوبونات الخصم
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-xs sm:text-sm text-gray-500 mt-1">
             أنشئ كوبونات خصم لعملائك لزيادة المبيعات والترويج لمتجرك
           </p>
         </div>
 
         <button
           onClick={() => setShowAddForm(!showAddForm)}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all shadow-sm ${
+          className={`w-full sm:w-auto justify-center flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all shadow-sm ${
             showAddForm
               ? "bg-gray-200 text-gray-700 hover:bg-gray-300"
               : "bg-gradient-to-r from-rose-400 to-rose-500 text-white hover:from-rose-500 hover:to-rose-600 shadow-rose-200"
@@ -618,17 +618,22 @@ export default function AdminCouponsPage() {
             <p className="text-xs text-gray-400 mt-1">اضغط على زر "إضافة كوبون جديد" لبدء إنشاء أول كوبون</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-right text-sm">
+          <div className="overflow-x-auto w-full max-w-full touch-pan-x">
+            {/* مؤشر توجيهي على الموبايل لتسهيل التمرير الأفقي */}
+            <div className="md:hidden px-4 py-2 bg-rose-50/80 border-b border-rose-100 text-rose-700 text-xs flex items-center justify-between font-medium">
+              <span>💡 يمكنك سحب الجدول يميناً ويساراً لمشاهدة باقي الأعمدة والإجراءات</span>
+              <span className="font-bold text-sm select-none">⟷</span>
+            </div>
+            <table className="w-full min-w-[700px] text-right text-sm">
               <thead className="bg-gray-50 text-gray-600 text-xs font-semibold border-b border-gray-100">
                 <tr>
-                  <th className="p-4">الكود</th>
-                  <th className="p-4">قيمة الخصم</th>
-                  <th className="p-4">الحد الأدنى</th>
-                  <th className="p-4">الاستخدام</th>
-                  <th className="p-4">الصلاحية</th>
-                  <th className="p-4">الحالة</th>
-                  <th className="p-4 text-center">الإجراءات</th>
+                  <th className="p-3.5 sm:p-4 whitespace-nowrap">الكود</th>
+                  <th className="p-3.5 sm:p-4 whitespace-nowrap">قيمة الخصم</th>
+                  <th className="p-3.5 sm:p-4 whitespace-nowrap">الحد الأدنى</th>
+                  <th className="p-3.5 sm:p-4 whitespace-nowrap">الاستخدام</th>
+                  <th className="p-3.5 sm:p-4 whitespace-nowrap">الصلاحية</th>
+                  <th className="p-3.5 sm:p-4 whitespace-nowrap">الحالة</th>
+                  <th className="p-3.5 sm:p-4 whitespace-nowrap text-center">الإجراءات</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -641,7 +646,7 @@ export default function AdminCouponsPage() {
                   return (
                     <tr key={coupon._id} className="hover:bg-gray-50/70 transition">
                       {/* الكود */}
-                      <td className="p-4 font-mono font-bold text-rose-600">
+                      <td className="p-3.5 sm:p-4 whitespace-nowrap font-mono font-bold text-rose-600">
                         <div className="flex items-center gap-2">
                           <span className="bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200">
                             {coupon.code}
@@ -657,7 +662,7 @@ export default function AdminCouponsPage() {
                       </td>
 
                       {/* قيمة الخصم */}
-                      <td className="p-4 font-semibold text-gray-800">
+                      <td className="p-3.5 sm:p-4 whitespace-nowrap font-semibold text-gray-800">
                         {coupon.discountType === "percentage" ? (
                           <span className="inline-flex items-center gap-1 text-purple-600 bg-purple-50 px-2 py-0.5 rounded-md text-xs">
                             <Percent className="w-3 h-3" /> {coupon.discountValue}%
@@ -675,14 +680,14 @@ export default function AdminCouponsPage() {
                       </td>
 
                       {/* الحد الأدنى للطلب */}
-                      <td className="p-4 text-gray-600 text-xs">
+                      <td className="p-3.5 sm:p-4 whitespace-nowrap text-gray-600 text-xs">
                         {coupon.minOrderAmount > 0
                           ? `₪${coupon.minOrderAmount}`
                           : "بدون حد أدنى"}
                       </td>
 
                       {/* الاستخدام */}
-                      <td className="p-4 text-xs text-gray-700">
+                      <td className="p-3.5 sm:p-4 whitespace-nowrap text-xs text-gray-700">
                         <span className="font-semibold">{coupon.usedCount || 0}</span>
                         {coupon.usageLimit ? (
                           <span className="text-gray-400"> / {coupon.usageLimit}</span>
@@ -697,7 +702,7 @@ export default function AdminCouponsPage() {
                       </td>
 
                       {/* تاريخ الصلاحية */}
-                      <td className="p-4 text-xs text-gray-600">
+                      <td className="p-3.5 sm:p-4 whitespace-nowrap text-xs text-gray-600">
                         {coupon.endDate ? (
                           <span
                             className={
@@ -713,7 +718,7 @@ export default function AdminCouponsPage() {
                       </td>
 
                       {/* الحالة */}
-                      <td className="p-4">
+                      <td className="p-3.5 sm:p-4 whitespace-nowrap">
                         {isExpired ? (
                           <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-red-50 text-red-600 border border-red-200">
                             منتهي
@@ -734,7 +739,7 @@ export default function AdminCouponsPage() {
                       </td>
 
                       {/* الإجراءات */}
-                      <td className="p-4">
+                      <td className="p-3.5 sm:p-4 whitespace-nowrap text-center">
                         <div className="flex items-center justify-center gap-2">
                           {/* تفعيل / تعطيل */}
                           <button

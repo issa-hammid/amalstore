@@ -19,13 +19,10 @@ export default function RootLayout({ children }) {
           theme="light"
         />
         
-        {/* باقي الـ layout */}
-        
-        <main>
-          <AdminLayout>
-            {children}
+        {/* لوحة تحكم الأدمن والصفحات التابعة لها */}
+        <AdminLayout>
+          {children}
         </AdminLayout>
-        </main>
       </body>
     </html>
   );

@@ -110,32 +110,44 @@ export default function AdminLayout({ children }) {
 
   return (
     <div dir="rtl" className="flex min-h-screen bg-gray-50 relative">
-      {/* زر القائمة للموبايل */}
-      <button
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="lg:hidden fixed top-4 right-4 z-[9999] p-2 rounded-xl bg-white shadow-md hover:bg-gray-100 transition"
-      >
-        {sidebarOpen ? (
-          <X className="w-6 h-6 text-gray-800" />
-        ) : (
-          <Menu className="w-6 h-6 text-gray-800" />
-        )}
-      </button>
+      {/* شريط الموبايل العلوي مع زر القائمة */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white/95 backdrop-blur-md border-b border-gray-200 z-[9990] flex items-center justify-between px-4 shadow-xs">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 bg-gradient-to-r from-rose-400 to-pink-500 text-white rounded-lg flex items-center justify-center font-bold text-sm shadow-xs">
+            أ
+          </div>
+          <div>
+            <span className="font-bold text-gray-800 text-sm block leading-tight">لوحة تحكم أمل</span>
+            <span className="text-[10px] text-gray-400 font-normal">إدارة المتجر</span>
+          </div>
+        </div>
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="p-2 rounded-xl bg-gray-50 border border-gray-200 text-gray-700 hover:bg-gray-100 transition shadow-xs focus:outline-none"
+          aria-label="القائمة الرئيسية"
+        >
+          {sidebarOpen ? (
+            <X className="w-5 h-5 text-gray-800" />
+          ) : (
+            <Menu className="w-5 h-5 text-gray-800" />
+          )}
+        </button>
+      </div>
 
-      {/* الخلفية الداكنة عند فتح السايدبار */}
+      {/* الخلفية الداكنة عند فتح السايدبار على الموبايل */}
       {sidebarOpen && (
         <div
           onClick={() => setSidebarOpen(false)}
-          className="fixed inset-0 bg-black/40 z-[9998] lg:hidden"
+          className="fixed inset-0 bg-black/40 z-[9998] lg:hidden backdrop-blur-xs transition-opacity"
         ></div>
       )}
 
       {/* السايدبار */}
       <aside
-        className={`fixed z-[9999] top-0 right-0 h-full bg-white border-l border-gray-200 shadow-lg transform transition-transform duration-300
+        className={`fixed z-[9999] top-0 right-0 h-full bg-white border-l border-gray-200 shadow-xl lg:shadow-none transform transition-transform duration-300
         w-64 p-4 flex flex-col justify-between
         ${sidebarOpen ? "translate-x-0" : "translate-x-full"}
-        lg:translate-x-0 lg:static lg:shadow-none`}
+        lg:translate-x-0 lg:static`}
       >
         {/* الجزء العلوي */}
         <div>
@@ -206,11 +218,8 @@ export default function AdminLayout({ children }) {
         </div>
       </aside>
 
-      {/* محتوى الصفحة */}
-      <main
-        className="flex-1 lg:mr-64 p-6 transition-all duration-300"
-        style={{ marginRight: "0" }}
-      >
+      {/* محتوى الصفحة - تم ضبطه بحيث لا يفيض ولا يكسر الشاشة على الجوال أبداً */}
+      <main className="flex-1 min-w-0 w-full max-w-full p-3.5 sm:p-5 md:p-6 pt-20 lg:pt-6 overflow-x-hidden transition-all duration-300">
         {children}
       </main>
     </div>

@@ -51,8 +51,8 @@ html, body {
   }
 }
 
-/* حركة الشريط الإعلاني المتحرك (الماركي) */
-@keyframes ticker-marquee-rtl {
+/* حركة الشريط الإعلاني المتحرك (الماركي) اللانهائي الانسيابي */
+@keyframes ticker-marquee-scroll {
   0% {
     transform: translate3d(0, 0, 0);
   }
@@ -64,12 +64,14 @@ html, body {
 .animate-ticker-marquee {
   display: flex;
   width: max-content;
-  animation: ticker-marquee-rtl 35s linear infinite;
+  animation: ticker-marquee-scroll 30s linear infinite;
   will-change: transform;
 }
 
-.animate-ticker-marquee:hover {
-  animation-play-state: paused;
+@media (hover: hover) and (pointer: fine) {
+  .animate-ticker-marquee:hover {
+    animation-play-state: paused;
+  }
 }
 
 
