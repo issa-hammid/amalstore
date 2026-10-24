@@ -130,16 +130,12 @@ ${orderData.customer.whatsapp ? `📱 *الواتساب:* ${orderData.customer.w
 📍 *العنوان بالتفصيل:* ${orderData.customer.address}
 ${orderData.customer.notes ? `📝 *ملاحظات:* ${orderData.customer.notes}` : ''}
 
-💳 *طريقة الدفع:* ${orderData.paymentMethod === 'cash' ? 'نقدي عند الاستلام' : 
-                   orderData.paymentMethod === 'mobile_transfer' ? 'تحويل عبر الجوال' : 
-                   'تحويل بنكي'}
+💳 *طريقة الدفع:* ${orderData.paymentMethod === 'mobile_transfer' ? 'تحويل عبر الجوال' : 'تحويل بنكي'}
 
-${orderData.paymentMethod !== 'cash' ? `
 🏦 *معلومات التحويل:*
 ${orderData.paymentMethod === 'mobile_transfer' ? 
   `📱 رقم الجوال: 0592543708` : 
   `📋 رقم IBAN: PS17PALS045230526340993100000`}
-` : ''}
 
 🛒 *المنتجات:*
 ${orderData.items.map(item => `• ${item.name} ${item.color ? `(${item.color.colorName})` : ''} ×${item.quantity} - ₪${(item.price * item.quantity).toFixed(2)} ${item.categoryName ? `[${item.categoryName}]` : ''}`).join('\n')}
@@ -216,7 +212,7 @@ export default function CartPage() {
     notes: "",
   });
 
-  const [paymentMethod, setPaymentMethod] = useState("cash");
+  const [paymentMethod, setPaymentMethod] = useState("mobile_transfer");
   const [selectedArea, setSelectedArea] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
@@ -422,7 +418,7 @@ export default function CartPage() {
       setCouponInput("");
       setCouponError("");
       setCouponSuccess("");
-      setPaymentMethod('cash');
+      setPaymentMethod('mobile_transfer');
 
     } catch (error) {
       console.error(' Error submitting order:', error);
@@ -846,25 +842,11 @@ export default function CartPage() {
                       </h3>
                       
                       <div className="space-y-3">
-                        <label className="flex items-center gap-3 p-3 border border-gray-300 rounded-lg hover:border-amber-400 hover:bg-amber-50 transition-all cursor-pointer">
-                          <input
-                            type="radio"
-                            name="paymentMethod"
-                            value="cash"
-                            checked={paymentMethod === "cash"}
-                            onChange={() => handlePaymentMethodChange("cash")}
-                            className="text-amber-500 focus:ring-amber-500"
-                          />
-                          <div className="flex items-center gap-2">
-                            <span className="text-2xl">💵</span>
-                            <div>
-                              <p className="font-medium text-gray-800">الدفع نقداً عند الاستلام</p>
-                              <p className="text-sm text-gray-600">ادفع عند استلام الطلب</p>
-                            </div>
-                          </div>
-                        </label>
-
-                        <label className="flex items-center gap-3 p-3 border border-gray-300 rounded-lg hover:border-amber-400 hover:bg-amber-50 transition-all cursor-pointer">
+                        <label className={`flex items-center gap-3 p-3 border rounded-lg transition-all cursor-pointer ${
+                          paymentMethod === "mobile_transfer" 
+                            ? "border-amber-500 bg-amber-50/60" 
+                            : "border-gray-300 hover:border-amber-400 hover:bg-amber-50"
+                        }`}>
                           <input
                             type="radio"
                             name="paymentMethod"
@@ -882,7 +864,11 @@ export default function CartPage() {
                           </div>
                         </label>
 
-                        <label className="flex items-center gap-3 p-3 border border-gray-300 rounded-lg hover:border-amber-400 hover:bg-amber-50 transition-all cursor-pointer">
+                        <label className={`flex items-center gap-3 p-3 border rounded-lg transition-all cursor-pointer ${
+                          paymentMethod === "bank_transfer" 
+                            ? "border-amber-500 bg-amber-50/60" 
+                            : "border-gray-300 hover:border-amber-400 hover:bg-amber-50"
+                        }`}>
                           <input
                             type="radio"
                             name="paymentMethod"
@@ -901,55 +887,53 @@ export default function CartPage() {
                         </label>
                       </div>
 
-                      {paymentMethod !== "cash" && (
-                        <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                          <h4 className="font-bold text-amber-700 mb-2">
-                            {paymentMethod === "mobile_transfer" 
-                              ? "معلومات التحويل عبر الجوال" 
-                              : "معلومات التحويل البنكي"}
-                          </h4>
-                          
-                          {paymentMethod === "mobile_transfer" ? (
-                            <div className="space-y-2">
-                              <div className="flex justify-between items-center">
-                                <span className="text-gray-700">رقم الجوال:</span>
-                                <div className="flex items-center gap-2">
-                                  <span className="font-mono text-amber-600">0592543708</span>
-                                  <button
-                                    type="button"
-                                    onClick={() => copyToClipboard("0592543708")}
-                                    className="text-amber-500 hover:text-amber-700 text-sm bg-white px-2 py-1 rounded border border-amber-300"
-                                  >
-                                    نسخ
-                                  </button>
-                                </div>
+                      <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                        <h4 className="font-bold text-amber-700 mb-2">
+                          {paymentMethod === "mobile_transfer" 
+                            ? "معلومات التحويل عبر الجوال" 
+                            : "معلومات التحويل البنكي"}
+                        </h4>
+                        
+                        {paymentMethod === "mobile_transfer" ? (
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center">
+                              <span className="text-gray-700">رقم الجوال:</span>
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono text-amber-600 font-bold">0592543708</span>
+                                <button
+                                  type="button"
+                                  onClick={() => copyToClipboard("0592543708")}
+                                  className="text-amber-600 hover:text-amber-800 text-sm bg-white px-2.5 py-1 rounded border border-amber-300 shadow-xs"
+                                >
+                                  نسخ
+                                </button>
                               </div>
-                              <p className="text-sm text-amber-600 mt-2">
-                                ✅ سيتم تأكيد الطلب بعد التحويل
-                              </p>
                             </div>
-                          ) : (
-                            <div className="space-y-2">
-                              <div className="flex justify-between items-center">
-                                <span className="text-gray-700">رقم IBAN:</span>
-                                <div className="flex items-center gap-2">
-                                  <span className="font-mono text-amber-600 text-sm">PS17PALS045230526340993100000</span>
-                                  <button
-                                    type="button"
-                                    onClick={() => copyToClipboard("PS17PALS045230526340993100000")}
-                                    className="text-amber-500 hover:text-amber-700 text-sm bg-white px-2 py-1 rounded border border-amber-300"
-                                  >
-                                    نسخ
-                                  </button>
-                                </div>
+                            <p className="text-sm text-amber-600 mt-2">
+                              ✅ سيتم تأكيد الطلب بعد التحويل
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center">
+                              <span className="text-gray-700">رقم IBAN:</span>
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono text-amber-600 text-xs sm:text-sm font-bold">PS17PALS045230526340993100000</span>
+                                <button
+                                  type="button"
+                                  onClick={() => copyToClipboard("PS17PALS045230526340993100000")}
+                                  className="text-amber-600 hover:text-amber-800 text-sm bg-white px-2.5 py-1 rounded border border-amber-300 shadow-xs"
+                                >
+                                  نسخ
+                                </button>
                               </div>
-                              <p className="text-sm text-amber-600 mt-2">
-                                ✅ سيتم تأكيد الطلب بعد التحويل
-                              </p>
                             </div>
-                          )}
-                        </div>
-                      )}
+                            <p className="text-sm text-amber-600 mt-2">
+                              ✅ سيتم تأكيد الطلب بعد التحويل
+                            </p>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     <button
